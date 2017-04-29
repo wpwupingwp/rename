@@ -2,10 +2,12 @@
 
 from Bio import SeqIO
 from sys import argv
+from os import mkdir
+from os.path import join as join_path
 
 
-handle = open(argv[1]+'.fasta', 'w')
-
+out = argv[1]+'_out'
+mkdir(out)
 for record in SeqIO.parse(argv[1], 'gb'):
     """
     From Zhang guojin
@@ -42,5 +44,6 @@ for record in SeqIO.parse(argv[1], 'gb'):
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             sequence = record.seq[feature.location.start:feature.location.end]
             sequence = str(sequence)
-            handle.write('>{}|{}|{}|{}\n{}\n'.format(gene, taxon, accession,
-                                                     specimen, sequence))
+            with open(join_path(out, gene+'.fasta'), 'a') as handle:
+                handle.write('>{}|{}|{}|{}\n{}\n'.format(
+                    gene, taxon, accession, specimen, sequence))
