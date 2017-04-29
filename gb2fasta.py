@@ -1,14 +1,19 @@
 #!/usr/bin/python3
 
 from Bio import SeqIO
-from sys import argv
 from os import mkdir
 from os.path import join as join_path
+from timeit import default_timer as timer
 
 
-out = argv[1]+'_out'
-mkdir(out)
-for record in SeqIO.parse(argv[1], 'gb'):
+start = timer()
+gb = input('Input file name:\n')
+out = gb+'_out'
+try:
+    mkdir(out)
+except:
+    raise Exception('{0} already exists, please use another name.'.format(gb))
+for record in SeqIO.parse(gb, 'gb'):
     """
     From Zhang guojin
     order statswith ales
@@ -47,3 +52,6 @@ for record in SeqIO.parse(argv[1], 'gb'):
             with open(join_path(out, gene+'.fasta'), 'a') as handle:
                 handle.write('>{}|{}|{}|{}\n{}\n'.format(
                     gene, taxon, accession, specimen, sequence))
+end = timer()
+print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
+{1}.'''.format(end-start, out))
