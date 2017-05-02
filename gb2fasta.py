@@ -4,9 +4,11 @@ from Bio import SeqIO
 from os import mkdir
 from os.path import join as join_path
 from timeit import default_timer as timer
+# from sys import argv
 
 
 start = timer()
+# gb = argv[1]
 gb = input('Input file name:\n')
 out = gb+'_out'
 try:
@@ -26,6 +28,8 @@ for record in SeqIO.parse(gb, 'gb'):
         'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
         'Leguminosae,Papilionaceae,Labiatae,Gramineae')
     family_exception = family_exception_raw[0].split(',')
+    order = ''
+    family = ''
     for item in order_family:
         if item.endswith('ales'):
             order = item
