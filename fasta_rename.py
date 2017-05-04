@@ -18,7 +18,7 @@ def get_format():
 def rename(file_list, new_format, out):
     for fasta in file_list:
         with open(fasta, 'r') as old, open(
-                join_path(out, fasta+'.rename'), 'w') as new:
+                join_path(out, fasta), 'w') as new:
             for line in old:
                 # skip sequence
                 if line[0] != '>':
