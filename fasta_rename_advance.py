@@ -4,20 +4,34 @@ from glob import glob
 from os import mkdir
 from os.path import join as join_path
 from timeit import default_timer as timer
+import re
 # from sys import argv
 
 
 def get_format(example):
     # read line until get id
+    SEP = r'[\-\|/\\:;~!\?@#$%^&\*+=]'
+    print(SEP)
     with open(example, 'r') as raw:
         while True:
-            one_line = raw.readline().strip()
-            if one_line.startswith('>'):
+            # omit ">" at the beginning of line
+            id_example = raw.readline().strip()
+            if id_example.startswith('>'):
                 break
-    print('This is raw id of one of sequence you give:\n')
-    print(one_record.id)
-    new_format = input('''Input format you want: (eg. "3461" will generate
-               "family|genus|accession_id|gene"\n''')
+    print('This is raw id of one of sequence you give:')
+    print(id_example, '\n')
+    index = 1
+    for match in re.split(SEP, id_example[1:]):
+        # print('{}.{}|'.format(index, match, end=''))
+        print('{}.{}'.format(index, match))
+        index += 1
+    print('''Choose fields you want by input numbers with any order you want.
+    If you omit seperators, it will use "|" to seperate fields. For example,
+    "3421" or "2!3!4#1"''')
+    new_format = input()
+    if set(' _').issubset(set(new_format)):
+        raise Exception('''To avoid possible errors, space and underline is
+                            prohibited.''')
     return new_format
 
 
@@ -44,9 +58,10 @@ def main():
     file_list = glob('*.fasta')
     example = file_list[-1]
     OUT = 'renamed'
-    mkdir(OUT)
 
     new_format = get_format(example)
+    exit -1
+    mkdir(OUT)
     start = timer()
     rename(file_list, new_format, OUT)
 
