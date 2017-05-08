@@ -20,19 +20,21 @@ def get_format(example):
                 break
     print('This is raw id of one of sequence you give:')
     print(id_example, '\n')
-    index = 1
-    for match in re.split(SEP, id_example[1:]):
+    for index, match in enumerate(re.split(SEP, id_example[1:]), 1):
         # print('{}.{}|'.format(index, match, end=''))
         print('{}.{}'.format(index, match))
         index += 1
-    print('''Choose fields you want by input numbers with any order you want.
-    If you omit seperators, it will use "|" to seperate fields. For example,
-    "3421" or "2!3!4#1"''')
+    print('''   Choose fields you want by input numbers with any order
+    you want. Seperators cannot be omitted and you should not use space or
+    underline. For example, "3|1|2|3!4#1"''')
     new_format = input()
-    if set(' _').issubset(set(new_format)):
+    if '_' in set(new_format) or ' ' in set(new_format):
         raise Exception('''To avoid possible errors, space and underline is
-                            prohibited.''')
-    return new_format
+prohibited.''')
+    pattern = re.sub()
+    repl = re.sub()
+    string = re.sub()
+    return pattern, repl, string
 
 
 def rename(file_list, new_format, out):
