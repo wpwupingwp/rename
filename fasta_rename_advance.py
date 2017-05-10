@@ -8,10 +8,8 @@ import re
 # from sys import argv
 
 
-def get_format(example):
+def get_format(example, SEP):
     # read line until get id
-    SEP = r'[\-\|/\\:;~!\?@#$%^&\*+=]'
-    print(SEP)
     with open(example, 'r') as raw:
         while True:
             # omit ">" at the beginning of line
@@ -20,7 +18,8 @@ def get_format(example):
                 break
     print('This is raw id of one of sequence you give:')
     print(id_example, '\n')
-    for index, match in enumerate(re.split(SEP, id_example[1:]), 1):
+    splitted = re.split(SEP, id_example[1:])
+    for index, match in enumerate(splitted, 1):
         # print('{}.{}|'.format(index, match, end=''))
         print('{}.{}'.format(index, match))
         index += 1
@@ -31,13 +30,17 @@ def get_format(example):
     if '_' in set(new_format) or ' ' in set(new_format):
         raise Exception('''To avoid possible errors, space and underline is
 prohibited.''')
-    pattern = re.sub()
-    repl = re.sub()
-    string = re.sub()
-    return pattern, repl, string
+
+    def minus_one(letter):
+        return '{{{}}}'.format((int(letter)-1))
+    new_format = re.sub(r'(\d+)', lambda match: minus_one(match.group(1)),
+                        new_format)
+    print('Your new id will look like'
+          'this:\n{}'.format(new_format.format(*splitted)))
+    return new_format
 
 
-def rename(file_list, new_format, out):
+def rename(file_list, new_format, out, SEP):
     for fasta in file_list:
         with open(fasta, 'r') as old, open(
                 join_path(out, fasta), 'w') as new:
@@ -47,12 +50,8 @@ def rename(file_list, new_format, out):
                     new.write(line)
                     continue
                 else:
-                    pick = list()
-                    fields = line[1:].split('|')
-                    for n in new_format:
-                        pick.append(fields[int(n)-1].strip())
-                    new.write('>{}\n'.format('|'.join(pick)))
-# to be continue
+                    line = new_format.format(*(re.split(SEP, line)))
+                    new.write('{}\n'.format(line))
 
 
 def main():
@@ -60,12 +59,12 @@ def main():
     file_list = glob('*.fasta')
     example = file_list[-1]
     OUT = 'renamed'
+    SEP = r'[\-\|/\\:;~!\?@#$%^&\*+=]'
 
-    new_format = get_format(example)
-    exit -1
+    new_format = get_format(example, SEP)
     mkdir(OUT)
     start = timer()
-    rename(file_list, new_format, OUT)
+    rename(file_list, new_format, OUT, SEP)
 
     end = timer()
     print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
