@@ -50,8 +50,8 @@ def rename(file_list, new_format, out, SEP):
                     new.write(line)
                     continue
                 else:
-                    line = new_format.format(*(re.split(SEP, line)))
-                    new.write('{}\n'.format(line))
+                    line = new_format.format(*(re.split(SEP, line[1:])))
+                    new.write('>{}\n'.format(line))
 
 
 def main():
