@@ -28,8 +28,13 @@ def get_format(example, SEP):
     underline. For example, "3|1|2|3!4#1"''')
     new_format = input()
     if '_' in set(new_format) or ' ' in set(new_format):
-        raise Exception('''To avoid possible errors, space and underline is
-prohibited.''')
+        print('To avoid possible errors, space(" ") and underline("_")'
+              ' is prohibited.')
+        option = input('Still continue?  [y/n]')
+        if option.startswith(('y', 'Y')):
+            pass
+        else:
+            return None
 
     def minus_one(letter):
         return '{{{}}}'.format((int(letter)-1))
@@ -62,6 +67,8 @@ def main():
     SEP = r'[\-\|/\\:;~!\?@#$%^&\*+=]'
 
     new_format = get_format(example, SEP)
+    if new_format is None:
+        return
     mkdir(OUT)
     start = timer()
     rename(file_list, new_format, OUT, SEP)
