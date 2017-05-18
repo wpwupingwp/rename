@@ -8,23 +8,18 @@ from glob import glob
 
 folders = glob('*')
 folders.remove('merge.py')
-file_list = list()
-for folder in folders:
-    file_list.append([folder, glob(folder+sep+'*')])
-choose = max(file_list, key=lambda i: len(i[1]))
-folder = choose[0]
-file_list = choose[1]
-folders.remove(choose[0])
+file_list = glob('*'+sep+'*')
+file_list = [basename(i) for i in file_list]
+choose = set(file_list)
 
 mkdir('out')
-for fasta in file_list:
-    with open(fasta, 'r') as head:
-        to_merge = head.read()
+for fasta in choose:
+    to_merge = str()
     for folder in folders:
         try:
-            with open(path_join(folder, basename(fasta)), 'r') as others:
+            with open(path_join(folder, fasta), 'r') as others:
                 to_merge = ''.join([to_merge, others.read()])
         except:
             print('Miss', folder, fasta)
-    with open(path_join('out', basename(fasta)), 'w') as out:
+    with open(path_join('out', fasta), 'w') as out:
         out.write(to_merge)
