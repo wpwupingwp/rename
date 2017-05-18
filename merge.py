@@ -1,24 +1,30 @@
 #!/usr/bin/python3
 
-from os import mkdir, walk
+from os import mkdir, sep
 from os.path import join as path_join
+from os.path import basename
+from glob import glob
 
 
-# os.walk [this, subfolder, files] -R
-file_list = list((walk('./')))
-folder_list = file_list[0][1:][0]
-example = folder_list[0]
-folder_list = folder_list[1:]
-file_list = file_list[1][2:][0]
-mkdir('merge')
+folders = glob('*')
+folders.remove('merge.py')
+file_list = list()
+for folder in folders:
+    file_list.append([folder, glob(folder+sep+'*')])
+choose = max(file_list, key=lambda i: len(i[1]))
+folder = choose[0]
+file_list = choose[1]
+folders.remove(choose[0])
+
+mkdir('out')
 for fasta in file_list:
-    with open(path_join(example, fasta), 'r') as head:
+    with open(fasta, 'r') as head:
         to_merge = head.read()
-    for folder in folder_list:
+    for folder in folders:
         try:
-            with open(path_join(folder, fasta), 'r') as others:
+            with open(path_join(folder, basename(fasta)), 'r') as others:
                 to_merge = ''.join([to_merge, others.read()])
         except:
-            continue
-    with open(path_join('merge', fasta), 'w') as out:
+            print('Miss', folder, fasta)
+    with open(path_join('out', basename(fasta)), 'w') as out:
         out.write(to_merge)
