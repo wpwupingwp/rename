@@ -6,20 +6,25 @@ import re
 def normalize(old_name):
     old_name = old_name.lower()
     # (trna|trn(?=[b-z]))
-    s = re.compile(r'(\d+\.?\d+?)(s|rrn)')
+    s = re.compile(r'(\d+\.?\d+?)(s|rrn|rdna)')
     if old_name.startswith('trn'):
         pattern = re.compile(r'([atcgu]{3})')
-        codon = Seq(re.search(pattern, old_name).group(1))
+        try:
+            codon = Seq(re.search(pattern, old_name).group(1))
+        except:
+            new_name = old_name
+            gene_type = 'bad_name'
+            return new_name, gene_type
         new_name = 'trn{}{}'.format(codon.translate(), codon)
-        type = 'tRNA'
+        gene_type = 'tRNA'
     elif old_name.startswith('rrn'):
         pattern = re.compile(r'(\d+)|rrn(.+)')
         number = re.search(pattern, old_name).group(1)
         new_name = 'rrn{}'.format(number)
-        type = 'rRNA'
+        gene_type = 'rRNA'
     elif re.search(s, old_name) is not None:
         new_name = 'rrn{}'.format(re.search(s, old_name).group(1))
-        type = 'rRNA'
+        gene_type = 'rRNA'
     else:
         pattern = re.compile(r'[^a-z]*'
                              '(?P<gene>[a-z]+)'
@@ -29,5 +34,5 @@ def normalize(old_name):
         gene = match.group('gene')
         suffix = match.group('suffix')
         new_name = '{}{}'.format(gene, suffix.upper())
-        type = 'normal'
-    return new_name, type
+        gene_type = 'normal'
+    return new_name, gene_type
