@@ -15,7 +15,12 @@ def normalize(old_name):
             new_name = old_name
             gene_type = 'bad_name'
             return new_name, gene_type
-        new_name = 'trn{}{}'.format(codon.translate(), codon)
+        new_name = 'trn{}{}'.format(codon.reverse_complement().translate(),
+                                    codon.transcribe())
+        # if 'u' in codon:
+        #     new_name = 'trn{}{}'.format(codon.translate(), codon)
+        # else:
+        #     new_name = 'trn{}{}'.format(codon.transcribe().translate(), codon)
         gene_type = 'tRNA'
     elif old_name.startswith('rrn'):
         pattern = re.compile(r'(\d+)|rrn(.+)')
