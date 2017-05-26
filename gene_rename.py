@@ -6,7 +6,7 @@ import re
 def normalize(old_name):
     old_name = old_name.lower()
     # (trna|trn(?=[b-z]))
-    s = re.compile(r'(\d+\.?\d+?)(s|rrn|rdna)')
+    s = re.compile(r'(\d+\.?\d?)(s|rrn|rdna)')
     if old_name.startswith('trn'):
         pattern = re.compile(r'([atcgu]{3})')
         try:
@@ -23,8 +23,13 @@ def normalize(old_name):
         #     new_name = 'trn{}{}'.format(codon.transcribe().translate(), codon)
         gene_type = 'tRNA'
     elif old_name.startswith('rrn'):
-        pattern = re.compile(r'(\d+)|rrn(.+)')
-        number = re.search(pattern, old_name).group(1)
+        pattern = re.compile(r'(\d+\.?\d?)')
+        try:
+            number = re.search(pattern, old_name).group(1)
+        except:
+            new_name = old_name
+            gene_type = 'bad_name'
+            return new_name, gene_type
         new_name = 'rrn{}'.format(number)
         gene_type = 'rRNA'
     elif re.search(s, old_name) is not None:
