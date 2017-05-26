@@ -44,3 +44,7 @@ def normalize(old_name):
     if len(lower) >= 15:
         gene_type = 'suspicious_name'
     return new_name, gene_type
+
+
+def capitalize():
+    pass
