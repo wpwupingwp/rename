@@ -8,12 +8,12 @@ def normalize(old_name):
     # (trna|trn(?=[b-z]))
     s = re.compile(r'(\d+\.?\d+?)(s|rrn)')
     if old_name.startswith('trn'):
-        pattern = re.compile(r'[atcgu]{3})')
+        pattern = re.compile(r'([atcgu]{3})')
         codon = Seq(re.search(pattern, old_name).group(1))
         new_name = 'trn{}{}'.format(codon.translate(), codon)
         type = 'tRNA'
     elif old_name.startswith('rrn'):
-        pattern = re.compile(r'\d+')
+        pattern = re.compile(r'(\d+)|rrn(.+)')
         number = re.search(pattern, old_name).group(1)
         new_name = 'rrn{}'.format(number)
         type = 'rRNA'
