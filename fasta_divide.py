@@ -20,7 +20,7 @@ def get_choice(fasta, sep):
         print('{}.{}'.format(index, match))
         index += 1
     choice = input(
-        'Choose seperator you want by input number of the field')
+        'Choose seperator you want by input number of the field:\n')
     return int(choice)
 
 
