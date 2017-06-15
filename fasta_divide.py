@@ -39,7 +39,7 @@ def main():
     args.add_argument('input', help='input file as fasta format')
     args.add_argument('-s', type=int, dest='choice',
                       help='the field you want to use')
-    args.add_argument('-o', '--output', default='out',
+    args.add_argument('-o', '--out', default='out',
                             help='output directory')
     args = args.parse_args()
 
