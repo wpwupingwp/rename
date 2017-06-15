@@ -45,6 +45,23 @@ Sequence id follows this format:
 field could only be used once.
 -  Find output files in "renamed" folder.
 
+# group_by.py
+
+Divide sequences in input fasta file into different file according to
+seperator you choose. Make sure they have same format in sequence id.
+
+If the field as seperator in sequence id does not exist, it will be put into
+FAILED.fasta.
+
+## Usage:
+
+- Run
+> python3 group_by.py input_file
+- Choose the field you want to use to be seperator
+- If you know which field you want the you can run like this:
+> python3 group_by.py input_file -c n
+The n is the number of field.
+
 # Requirement
 
 1. [python3](https://www.python.org/downloads/)
