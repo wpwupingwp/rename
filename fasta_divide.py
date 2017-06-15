@@ -37,22 +37,26 @@ def main():
     start = timer()
     args = argparse.ArgumentParser(description=main.__doc__)
     args.add_argument('input', help='input file as fasta format')
+    args.add_argument('-o', dest='out', help='output folder')
     args.add_argument('-s', type=int, dest='choice',
                       help='the field you want to use')
-    args.add_argument('-o', '--out', default='out',
-                            help='output directory')
     args = args.parse_args()
 
     SEP = re.compile(r'[\-\|/\\:;~!\?@#$%^&\*+=]')
-    os.mkdir(args.out)
+    if args.out is None:
+        out_folder = os.path.splitext(args.input)[0]
+        out_folder = '_'.join([out_folder, 'out'])
+    else:
+        out_folder = args.out
+    os.mkdir(out_folder)
     if args.choice is None:
         choice = get_choice(args.input, SEP)
     start = timer()
-    divide(args.input, SEP, choice, args.out)
+    divide(args.input, SEP, choice, out_folder)
 
     end = timer()
     print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
-    {1}.'''.format(end-start, args.out))
+    {1}.'''.format(end-start, out_folder))
 
 
 if __name__ == '__main__':
