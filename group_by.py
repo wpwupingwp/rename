@@ -40,7 +40,7 @@ def main():
     args = argparse.ArgumentParser(description=main.__doc__)
     args.add_argument('input', help='input file as fasta format')
     args.add_argument('-o', dest='out', help='output folder')
-    args.add_argument('-s', type=int, dest='choice',
+    args.add_argument('-c', type=int, dest='choice',
                       help='the field you want to use')
     args = args.parse_args()
 
