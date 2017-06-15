@@ -14,7 +14,7 @@ def get_choice(fasta, sep):
             if line.startswith('>'):
                 break
     print('This is raw id of one of sequence you give:')
-    print(line, '\n')
+    print(line)
     splitted = re.split(sep, line[1:])
     for index, match in enumerate(splitted, 1):
         print('{}.{}'.format(index, match))
@@ -27,8 +27,10 @@ def get_choice(fasta, sep):
 def divide(fasta, sep, choice, out):
     for record in SeqIO.parse(fasta, 'fasta'):
         item = re.split(sep, record.id)
-        # remove illegal characters
-        item = item[choice-1]
+        try:
+            item = item[choice-1]
+        except:
+            item = 'FAILED'
         with open(os.path.join(out, item+'.fasta'), 'a') as output:
             SeqIO.write(record, output, 'fasta')
 
@@ -55,8 +57,10 @@ def main():
     divide(args.input, SEP, choice, out_folder)
 
     end = timer()
-    print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
-    {1}.'''.format(end-start, out_folder))
+    print('''
+Finished with {0:.3f} s. You can find fasta file in the folder {1}. Some
+sequences cannot be divided because of lack of info and they were put
+into failed.fasta'''.format(end-start, out_folder))
 
 
 if __name__ == '__main__':
