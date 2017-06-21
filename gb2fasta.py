@@ -4,12 +4,12 @@ from Bio import SeqIO
 from os import mkdir
 from os.path import join as join_path
 from timeit import default_timer as timer
-# from sys import argv
+from sys import argv
 
 
 start = timer()
-# gb = argv[1]
-gb = input('Input file name:\n')
+gb = argv[1]
+# gb = input('Input file name:\n')
 out = gb+'_out'
 try:
     mkdir(out)
