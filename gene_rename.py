@@ -4,6 +4,8 @@ import re
 
 
 def normalize(old_name):
+    """For chloroplast gene.
+    """
     lower = old_name.lower()
     # (trna|trn(?=[b-z]))
     s = re.compile(r'(\d+\.?\d?)(s|rrn|rdna)')
@@ -44,7 +46,3 @@ def normalize(old_name):
     if len(lower) >= 15:
         gene_type = 'suspicious_name'
     return new_name, gene_type
-
-
-def capitalize():
-    pass
