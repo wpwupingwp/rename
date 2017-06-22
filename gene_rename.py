@@ -46,9 +46,12 @@ def normalize(old_name):
         except:
             return old_name, 'bad_name'
         new_name = '{}{}'.format(gene, suffix.upper())
-        # for rpoC
-        if new_name.startswith('rpoc'):
-            new_name = new_name.replace('rpoc', 'rpoC')
+        # for gene like rpoC, to normalize capitalize
+        if len(new_name) > 3:
+            s = list(new_name)
+            if s[3].isalpha():
+                new_name = '{}{}'.format(
+                    ''.join(s[0:3]), ''.join(s[3:]).upper())
         gene_type = 'normal'
     if len(lower) >= 15:
         gene_type = 'suspicious_name'
