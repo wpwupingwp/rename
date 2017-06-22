@@ -1,3 +1,35 @@
+# gene_rename.py
+
+Normalize gene name by these rules:
+
+- rRNA gene should start with "rrn"
+- tRNA gene should look like "trnXnnn", and "X" is the letter of amino acids,
+  "nnn" is 3 letters of codon. Note that it is tran-reversed.
+-  for other gene names, characters not being alphabet will be removed, and
+   suffix like number or letter of subunit will be capitalized.
+- name which could not be recognized will do nothing
+
+## Usage
+
+This is a python3 function. It need *re* and *Biopython* to run.
+
+To use it, follow this example:
+
+> from gene_rename import normalize
+
+> new_name, name_type = normalize(old_name)
+
+Mention that all input and output is string. For *name_type*, it will be:
+
+* bad_name
+* suspicious_name
+* tRNA
+* rRNA
+* normal
+
+"bad_name" means it cannot be recognized and will be same as input.
+"suspicious_name" means it its too long (longer than 15 characters).
+
 # gb2fasta.py
 
 ## Name format
