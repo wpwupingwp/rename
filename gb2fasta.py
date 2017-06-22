@@ -6,6 +6,8 @@ from os.path import join as join_path
 from timeit import default_timer as timer
 from sys import argv
 
+from gene_rename import normalize
+
 
 start = timer()
 gb = argv[1]
@@ -51,6 +53,7 @@ for record in SeqIO.parse(gb, 'gb'):
     for feature in record.features:
         if feature.type == 'gene' and 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
+            gene = normalize(gene)[0]
             sequence = record.seq[feature.location.start:feature.location.end]
             sequence = str(sequence)
             with open(join_path(out, gene+'.fasta'), 'a') as handle:
