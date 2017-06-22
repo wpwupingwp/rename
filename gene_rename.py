@@ -5,6 +5,8 @@ import re
 
 def normalize(old_name):
     """For chloroplast gene.
+    Input->str
+    Output->List[new_name:str, name_type:str]
     """
     lower = old_name.lower()
     # (trna|trn(?=[b-z]))
