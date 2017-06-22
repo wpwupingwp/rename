@@ -14,20 +14,19 @@ def normalize(old_name):
         try:
             codon = Seq(re.search(pattern, lower).group(1))
         except:
-            new_name = old_name
-            gene_type = 'bad_name'
-            return new_name, gene_type
-        new_name = 'trn{}{}'.format(codon.reverse_complement().translate(),
-                                    codon.transcribe())
+            return old_name, 'bad_name'
+        try:
+            new_name = 'trn{}{}'.format(codon.reverse_complement().translate(),
+                                        codon.transcribe())
+        except:
+            return old_name, 'bad_name'
         gene_type = 'tRNA'
     elif lower.startswith('rrn'):
         pattern = re.compile(r'(\d+\.?\d?)')
         try:
             number = re.search(pattern, lower).group(1)
         except:
-            new_name = old_name
-            gene_type = 'bad_name'
-            return new_name, gene_type
+            return old_name, 'bad_name'
         new_name = 'rrn{}'.format(number)
         gene_type = 'rRNA'
     elif re.search(s, lower) is not None:
@@ -39,8 +38,11 @@ def normalize(old_name):
                              '[^a-z0-9]*'
                              '(?P<suffix>[a-z]|[0-9]+)')
         match = re.search(pattern, lower)
-        gene = match.group('gene')
-        suffix = match.group('suffix')
+        try:
+            gene = match.group('gene')
+            suffix = match.group('suffix')
+        except:
+            return old_name, 'bad_name'
         new_name = '{}{}'.format(gene, suffix.upper())
         # for rpoC
         if new_name.startswith('rpoc'):
