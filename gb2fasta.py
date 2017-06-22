@@ -50,11 +50,12 @@ for record in SeqIO.parse(gb, 'gb'):
                                                  ][0].replace(' ', '_')
     except:
         specimen = ''
+    seq = record.seq
     for feature in record.features:
         if feature.type == 'gene' and 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             gene = normalize(gene)[0]
-            sequence = record.seq[feature.location.start:feature.location.end]
+            sequence = feature.extract(seq)
             sequence = str(sequence)
             with open(join_path(out, gene+'.fasta'), 'a') as handle:
                 handle.write('>{}|{}|{}|{}\n{}\n'.format(
