@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import re
 from Bio import SeqIO
 from os import mkdir
 from os.path import join as join_path
@@ -7,6 +8,10 @@ from timeit import default_timer as timer
 from sys import argv
 
 from gene_rename import normalize
+
+
+def safe(old):
+    return re.sub(r'\W', '_', old)
 
 
 start = timer()
@@ -55,6 +60,7 @@ for record in SeqIO.parse(argv[1], 'gb'):
         if feature.type == 'gene' and 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             gene = normalize(gene)[0]
+            gene = safe(gene)
             sequence = feature.extract(seq)
             sequence = str(sequence)
             with open(join_path(out, gene+'.fasta'), 'a') as handle:
