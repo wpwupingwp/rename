@@ -13,6 +13,11 @@ start = timer()
 out = '{}-out'.format(argv[1].replace('.gb', ''))
 mkdir(out)
 handle_raw = open(argv[1]+'.fasta', 'w')
+
+family_exception_raw = (
+    'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
+    'Leguminosae,Papilionaceae,Labiatae,Gramineae')
+family_exception = family_exception_raw[0].split(',')
 for record in SeqIO.parse(argv[1], 'gb'):
     """
     From Zhang guojin
@@ -22,17 +27,16 @@ for record in SeqIO.parse(argv[1], 'gb'):
     %E7%A7%B0&mobileaction=toggle_view_mobile"""
     # order|family|organims(genus|species)
     order_family = record.annotations['taxonomy']
-    family_exception_raw = (
-        'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
-        'Leguminosae,Papilionaceae,Labiatae,Gramineae')
-    family_exception = family_exception_raw[0].split(',')
+    # family_exception_raw = (
+    #     'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
+    #     'Leguminosae,Papilionaceae,Labiatae,Gramineae')
+    # family_exception = family_exception_raw[0].split(',')
     order = ''
     family = ''
     for item in order_family:
         if item.endswith('ales'):
             order = item
-            continue
-        if item.endswith('aceae'):
+        elif item.endswith('aceae'):
             family = item
         elif item in family_exception:
             family = item
