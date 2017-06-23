@@ -10,14 +10,10 @@ from gene_rename import normalize
 
 
 start = timer()
-gb = argv[1]
-# gb = input('Input file name:\n')
-out = gb+'_out'
-try:
-    mkdir(out)
-except:
-    raise Exception('{0} already exists, please use another name.'.format(gb))
-for record in SeqIO.parse(gb, 'gb'):
+out = '{}-out'.format(argv[1].replace('.gb', ''))
+mkdir(out)
+handle_raw = open(argv[1]+'.fasta', 'w')
+for record in SeqIO.parse(argv[1], 'gb'):
     """
     From Zhang guojin
     order statswith ales
@@ -60,6 +56,10 @@ for record in SeqIO.parse(gb, 'gb'):
             with open(join_path(out, gene+'.fasta'), 'a') as handle:
                 handle.write('>{}|{}|{}|{}\n{}\n'.format(
                     gene, taxon, accession, specimen, sequence))
+    record.description = ''
+    record.id = '|'.join(['raw', taxon, accession, specimen])
+    SeqIO.write(record, handle_raw, 'fasta')
+
 end = timer()
 print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
 {1}.'''.format(end-start, out))
