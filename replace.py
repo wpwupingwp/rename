@@ -17,14 +17,11 @@ for fasta in file_list:
             if not line.startswith('>'):
                 new.write(line)
             else:
-                line = line[1:].split('|')
-                line = [i.strip() for i in line]
-                newline = list()
-                for item in line:
-                    try:
-                        item = info[item]
-                    except:
-                        pass
-                    newline.append(item)
-                new.write('>{}\n'.format('|'.join(newline)))
+                bop = line[1:10]
+                try:
+                    item = info[bop]
+                except:
+                    item = bop
+                newline = line.replace(bop, item)
+                new.write(newline)
 print('Done.')
