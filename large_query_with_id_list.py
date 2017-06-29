@@ -6,14 +6,11 @@ import argparse
 
 
 def get_id_list(id_list_file):
-    N = 1000
+    id_list = list()
     with open(id_list_file) as raw:
-        to_down = list()
-        for index, line in enumerate(raw):
-            to_down.append(line.strip())
-            if index % N == 0:
-                yield to_down
-                to_down = list()
+        for line in raw:
+            id_list.append(line.strip())
+    return id_list
 
 
 def down(id_list_file, email, output):
@@ -23,9 +20,8 @@ def down(id_list_file, email, output):
         id_list = ', '.join(to_down)
         print('id list', id_list)
         handle = Entrez.read(Entrez.esearch(db='nuccore',
-                                          term=id_list,
-                                          usehistory='y',))
-        print('handle', handle)
+                                            term=id_list,
+                                            usehistory='y',))
         genome_content = Entrez.efetch(db='nuccore',
                                        webenv=handle['WebEnv'],
                                        query_key=handle['QueryKey'],
@@ -46,7 +42,6 @@ def parse_args():
 def main():
     start = timer()
     arg = parse_args()
-    print(arg)
 
     down(arg.id_list, arg.email, arg.out)
     end = timer()

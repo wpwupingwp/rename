@@ -24,8 +24,8 @@ while Retstart <= count:
                                        rettype='gb',
                                        retmode='text',
                                        retstart=Retstart,
-                                       retmax=2000)
+                                       retmax=1000)
         output_file.write(genome_content.read())
     except:
         continue
-    Retstart = Retstart + 2000
+    Retstart = Retstart + 1000
