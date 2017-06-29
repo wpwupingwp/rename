@@ -27,6 +27,7 @@ def down_wrapper(id_list_file, batch_size, email, output, redo):
     Entrez.email = email
     out = open(output, 'w')
     tried = 0
+    last_one = ''
     for n, to_down in get_id_list(id_list_file, batch_size, redo):
         while True:
             if down(to_down, out):
@@ -35,7 +36,6 @@ def down_wrapper(id_list_file, batch_size, email, output, redo):
                 print('Too much failure. Please check your network.')
                 print('Retry ...')
             elif tried == 10:
-                new_file = '{}.{}'.format(id_list_file, tried)
                 print('Seems not work. Quit now!')
                 print('If you want to continue, add option'
                       ' "-redo {}" in old command'.format(last_one))
