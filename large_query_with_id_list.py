@@ -10,9 +10,14 @@ def get_id_list(id_list_file, batch_size, redo):
     with open(id_list_file) as raw:
         for line in raw:
             id_list.append(line.strip())
-    if redo:
-        with open('down.log', 'r') as log:
-
+    if redo is not None:
+        try:
+            location = id_list.index(redo)
+            id_list = id_list[location:]
+            print('Skipped {} records.'.format(location))
+        except:
+            raise ValueError('Wrong redo value! It looks like\n{}'.format(
+                id_list[0]))
     for n in range(0, len(id_list), batch_size):
         # list slice return empty list if slice out of len(list)
         yield n, id_list[n:(n+batch_size)]
@@ -29,13 +34,16 @@ def down_wrapper(id_list_file, batch_size, email, output, redo):
             elif tried == 3:
                 print('Too much failure. Please check your network.')
                 print('Retry ...')
-            elif tried = 10:
+            elif tried == 10:
                 new_file = '{}.{}'.format(id_list_file, tried)
                 print('Seems not work. Quit now!')
+                print('If you want to continue, add option'
+                      ' "-redo {}" in old command'.format(last_one))
                 break
             else:
                 print('Retry ...')
             tried += 1
+        last_one = to_down[-1]
     out.close()
 
 
@@ -66,8 +74,7 @@ def parse_args():
                      help='email address')
     arg.add_argument('-b', '--batch_size', type=int, default=500,
                      help='Number of records to download once')
-    arg.add_argument('-redo', action='store_true',
-                     help='restart from broken process')
+    arg.add_argument('-redo', help='id which restart from')
     arg.add_argument('-out', default='sequence.gb', help='output filename')
     return arg.parse_args()
 
