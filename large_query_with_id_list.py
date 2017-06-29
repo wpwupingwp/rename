@@ -6,17 +6,22 @@ import argparse
 
 
 def get_id_list(id_list_file):
+    N = 500
     id_list = list()
     with open(id_list_file) as raw:
         for line in raw:
             id_list.append(line.strip())
-    return id_list
+    for n in range(0, len(id_list), N):
+    # list slice return empty list if slice out of len(list)
+        yield id_list[n:(n+N)]
+
+
 
 
 def down(id_list_file, email, output):
     Entrez.email = email
     output_file = open(output, 'w')
-    for to_down in get_id_list(id_list_file):
+    for batch in get_id_list(id_list_file):
         id_list = ', '.join(to_down)
         print('id list', id_list)
         handle = Entrez.read(Entrez.esearch(db='nuccore',
