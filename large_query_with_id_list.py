@@ -84,7 +84,7 @@ def main():
     global arg
     arg = parse_args()
 
-    down(arg.id_list, arg.batch_size, arg.email, arg.out, arg.redo)
+    down_wrapper(arg.id_list, arg.batch_size, arg.email, arg.out, arg.redo)
     end = timer()
     print('Cost {:.3f} seconds.'.format(end-start))
 
