@@ -5,22 +5,43 @@ from timeit import default_timer as timer
 import argparse
 
 
-def get_id_list(id_list_file):
-    N = 500
+def get_id_list(id_list_file, batch_size, redo):
     id_list = list()
     with open(id_list_file) as raw:
         for line in raw:
             id_list.append(line.strip())
-    for n in range(0, len(id_list), N):
+    if redo:
+        with open('down.log', 'r') as log:
+
+    for n in range(0, len(id_list), batch_size):
         # list slice return empty list if slice out of len(list)
-        yield id_list[n:(n+N)]
+        yield n, id_list[n:(n+batch_size)]
 
 
-def down(id_list_file, email, output):
+def down_wrapper(id_list_file, batch_size, email, output, redo):
     Entrez.email = email
-    output_file = open(output, 'w')
-    for to_down in get_id_list(id_list_file):
-        print('{} ... {}'.format(to_down[0], to_down[-1]))
+    out = open(output, 'w')
+    tried = 0
+    for n, to_down in get_id_list(id_list_file, batch_size, redo):
+        while True:
+            if down(to_down, out):
+                break
+            elif tried == 3:
+                print('Too much failure. Please check your network.')
+                print('Retry ...')
+            elif tried = 10:
+                new_file = '{}.{}'.format(id_list_file, tried)
+                print('Seems not work. Quit now!')
+                break
+            else:
+                print('Retry ...')
+            tried += 1
+    out.close()
+
+
+def down(to_down, output_file):
+    try:
+        print('{} ... {}'.format(to_down[0], to_down[-1]), end='\t')
         id_list = ','.join(to_down)
         handle = Entrez.read(Entrez.esearch(db='nuccore',
                                             term=id_list,
@@ -31,22 +52,32 @@ def down(id_list_file, email, output):
                                        rettype='gb',
                                        retmode='text')
         output_file.write(genome_content.read())
+        got = len(to_down)
+        print('{} records got.'.format(got))
+        return True
+    except:
+        return False
 
 
 def parse_args():
     arg = argparse.ArgumentParser()
     arg.add_argument('id_list', help='Accession ID list downloaded from NCBI')
-    arg.add_argument('-email', default='wpwupingwp@outlook.com',
+    arg.add_argument('-e', '--email', default='wpwupingwp@outlook.com',
                      help='email address')
+    arg.add_argument('-b', '--batch_size', type=int, default=500,
+                     help='Number of records to download once')
+    arg.add_argument('-redo', action='store_true',
+                     help='restart from broken process')
     arg.add_argument('-out', default='sequence.gb', help='output filename')
     return arg.parse_args()
 
 
 def main():
     start = timer()
+    global arg
     arg = parse_args()
 
-    down(arg.id_list, arg.email, arg.out)
+    down(arg.id_list, arg.batch_size, arg.email, arg.out, arg.redo)
     end = timer()
     print('Cost {:.3f} seconds.'.format(end-start))
 
