@@ -25,11 +25,11 @@ def main():
     def get_longest(records):
         info = list()
         for record in records:
-            n = record.count('N') + record.count('n')
+            n = record.seq.count('N') + record.seq.count('n')
             length = len(record.seq) - n
-            info.append(length, record)
+            info.append([length, record])
         longest = max(info, key=lambda x: x[0])
-        return longest
+        return longest[1]
 
     print('Duplicated sequences:')
     log = open(argv[1]+'.log', 'w')
@@ -41,11 +41,11 @@ def main():
             log.write('Longest:\t{} in ({})\n'.format(
                 longest.id, '\t'.join(id_list)))
     log.write('Before\t{}\tAfter\t{}\n'.format(before, after))
-    with open(argv[1]+'.new', 'a') as output_file:
+    with open(argv[1]+'.uniq', 'a') as output_file:
         SeqIO.write(output, output_file, 'fasta')
     end = timer()
     print('Total {} sequences in {} format.'.format(before, 'fasta'))
-    print('{} sequences left in the file {}.new.'.format(after, argv[1]))
+    print('{} sequences left in the file {}.uniq.'.format(after, argv[1]))
     print('Cost {:.3f} seconds.'.format(end-start))
 
 
