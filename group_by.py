@@ -52,9 +52,9 @@ def main():
         out_folder = args.out
     os.mkdir(out_folder)
     if args.choice is None:
-        choice = get_choice(args.input, SEP)
+        args.choice = get_choice(args.input, SEP)
     start = timer()
-    divide(args.input, SEP, choice, out_folder)
+    divide(args.input, SEP, args.choice, out_folder)
 
     end = timer()
     print('''
