@@ -85,6 +85,14 @@ seperator you choose. Make sure they have same format in sequence id.
 If the field as seperator in sequence id does not exist, it will be put into
 FAILED.fasta.
 
+# large_query.py
+
+Input query string same as in NCBI Genbank and download large data.
+
+# large_query_with_id_list.py
+
+According to accession id list you downloaded from NCBI, download gb records.
+
 ## Usage:
 
 - Run
