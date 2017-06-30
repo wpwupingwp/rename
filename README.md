@@ -93,6 +93,9 @@ Input query string same as in NCBI Genbank and download large data.
 
 According to accession id list you downloaded from NCBI, download gb records.
 
+# merge_same_species.py
+
+
 ## Usage:
 
 - Run
