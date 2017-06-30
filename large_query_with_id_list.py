@@ -63,6 +63,8 @@ def down(to_down, output_file):
         got = len(to_down)
         print('{} records got.'.format(got))
         return True
+    except KeyboardInterrupt:
+        raise
     except:
         return False
 
