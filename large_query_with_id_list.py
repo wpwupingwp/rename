@@ -30,7 +30,7 @@ def down_wrapper(id_list_file, batch_size, email, output, redo):
     last_one = ''
     for n, to_down in get_id_list(id_list_file, batch_size, redo):
         while True:
-            if down(to_down, out):
+            if down(n, to_down, out):
                 break
             elif tried == 3:
                 print('Too much failure. Please check your network.')
@@ -47,9 +47,9 @@ def down_wrapper(id_list_file, batch_size, email, output, redo):
     out.close()
 
 
-def down(to_down, output_file):
+def down(n, to_down, output_file):
     try:
-        print('{} ... {}'.format(to_down[0], to_down[-1]), end='\t')
+        print('{}: {} ... {}'.format(n, to_down[0], to_down[-1]), end='\t')
         id_list = ','.join(to_down)
         handle = Entrez.read(Entrez.esearch(db='nuccore',
                                             term=id_list,
