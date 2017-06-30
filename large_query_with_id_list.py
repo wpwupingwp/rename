@@ -7,7 +7,7 @@ import argparse
 
 def get_id_list(id_list_file, batch_size, redo):
     id_list = list()
-    with open(id_list_file) as raw:
+    with open(id_list_file, 'r') as raw:
         for line in raw:
             id_list.append(line.strip())
     if redo is not None:
@@ -25,7 +25,7 @@ def get_id_list(id_list_file, batch_size, redo):
 
 def down_wrapper(id_list_file, batch_size, email, output, redo):
     Entrez.email = email
-    out = open(output, 'w')
+    out = open(output, 'a')
     tried = 0
     last_one = ''
     for n, to_down in get_id_list(id_list_file, batch_size, redo):
