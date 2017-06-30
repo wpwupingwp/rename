@@ -12,7 +12,7 @@ def get_id_list(id_list_file, batch_size, redo):
             id_list.append(line.strip())
     if redo is not None:
         try:
-            location = id_list.index(redo)
+            location = id_list.index(redo) + 1
             id_list = id_list[location:]
             print('Skipped {} records.'.format(location))
         except:
@@ -49,7 +49,7 @@ def down_wrapper(id_list_file, batch_size, email, output, redo):
 
 def down(n, to_down, output_file):
     try:
-        print('{}: {} ... {}'.format(n, to_down[0], to_down[-1]), end='\t')
+        print('{}: {} ... {}'.format(n+1, to_down[0], to_down[-1]))
         id_list = ','.join(to_down)
         handle = Entrez.read(Entrez.esearch(db='nuccore',
                                             term=id_list,
@@ -60,8 +60,6 @@ def down(n, to_down, output_file):
                                        rettype='gb',
                                        retmode='text')
         output_file.write(genome_content.read())
-        got = len(to_down)
-        print('{} records got.'.format(got))
         return True
     except KeyboardInterrupt:
         raise
