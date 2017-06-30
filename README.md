@@ -93,7 +93,23 @@ Input query string same as in NCBI Genbank and download large data.
 
 According to accession id list you downloaded from NCBI, download gb records.
 
-# merge_same_species.py
+Usage:
+
+> python3 large_query_with_id_list.py id_list -redo accession_number
+
+The id_list is accession list file you downloaded before. If the download
+process failed, program will quit and you can use "-redo" to continue from
+given accession number.
+
+# uniq_species.py
+
+Only left one record per species by remove shorter sequence (consider 'N').
+
+Usage:
+
+> python3 uniq-species.py input.fasta
+
+See log file for detail output.
 
 
 ## Usage:
