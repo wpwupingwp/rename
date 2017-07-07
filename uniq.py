@@ -2,6 +2,7 @@
 
 from Bio import SeqIO
 from timeit import default_timer as timer
+from subprocess import run
 import argparse
 import re
 
@@ -67,7 +68,6 @@ def uniq(args, sep):
     print('Duplicated sequences:')
     log = open(args.input+'.log', 'w')
     output = open(args.input+'.uniq', 'w')
-    log.write('Before\tAfter\n')
     for record in name_seq.values():
         after += 1
         longest = get_longest(record)
@@ -76,6 +76,7 @@ def uniq(args, sep):
             id_list = [i.id for i in record]
             log.write('Longest:\t{} in ({})\n'.format(
                 longest.id, '\t'.join(id_list)))
+    log.write('Before\tAfter\n')
     log.write('{}\t\t{}\n'.format(before, after))
     print('Total {} sequences in {} format.'.format(before, 'fasta'))
     print('{} sequences left in the file {}.uniq.'.format(after, args.input))

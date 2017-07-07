@@ -1,0 +1,2 @@
+- different methods of get uniq sequence
+- detail log, length, count 
