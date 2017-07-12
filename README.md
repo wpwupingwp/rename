@@ -42,11 +42,9 @@ Covert genbank format to fasta format with reformated id.
 
 ## Usage
 
-Put this program in same folder with genbank file, double click to run. Then input file name.
-- Put this program in same folder with gb file you want to convert.
-- Double click to run. 
--  Input file name.
--  Find output files in "file_name_out"
+> python gb2fasta.py gb_file-name
+
+Find output files in "file_name_out".
 
 # fasta_rename.py
 
