@@ -1,4 +1,12 @@
+# Name format
+
+Most of programs below use sequence id format like this:
+
+>  1.gene|2.order|3.family|4.genus|5.species|6.accession_id|7.specimen_voucher
+
 # gene_rename.py
+
+Covert genbank format to fasta format with reformated id.
 
 Normalize gene name by these rules:
 
@@ -32,19 +40,15 @@ Mention that all input and output is string. For *name_type*, it will be:
 
 # gb2fasta.py
 
-## Name format
-
-Sequence id follows this format:
-
->  1.gene|2.order|3.family|4.genus|5.species|6.accession_id|7.specimen_voucher
-
-Covert genbank format to fasta format with reformated id.
-
 ## Usage
 
-> python gb2fasta.py gb_file-name
+> python3 gb2fasta.py gb_file-name
 
 Find output files in "file_name_out".
+
+## Example
+
+> python3 gb2fasta.py sequence.gb
 
 # fasta_rename.py
 
@@ -83,9 +87,31 @@ seperator you choose. Make sure they have same format in sequence id.
 If the field as seperator in sequence id does not exist, it will be put into
 FAILED.fasta.
 
+## Usage
+
+- Run
+> python3 group_by.py input_file
+- Choose the field you want to use to be seperator
+- If you know which field you want the you can run like this:
+> python3 group_by.py input_file -c n
+
+The n is the number of field.
+If you do not set "-c", it will hint you to choose which field of sequence id
+to be used as separator.
+
+## Example
+
+> python3 group_by.py cgl.fasta -c 4
+
 # large_query.py
 
 Input query string same as in NCBI Genbank and download large data.
+
+## Usage
+
+> python3 large_query.py
+
+Then input query string.
 
 # large_query_with_id_list.py
 
@@ -101,25 +127,22 @@ The id_list is accession list file you downloaded before. If the download
 process failed, program will quit and you can use "-redo" to continue from
 given accession number.
 
-# uniq_species.py
+# uniq.py
 
 Only left one record per species by remove shorter sequence (consider 'N').
 
-Usage:
+## Usage
 
-> python3 uniq-species.py input.fasta
+> python3 uniq-species.py input.fasta -c choice.
 
 See log file for detail output.
 
+If you do not set "-c", it will hint you to choose which field of sequence id
+was used to divide sequence.
 
-## Usage:
+## Example
 
-- Run
-> python3 group_by.py input_file
-- Choose the field you want to use to be seperator
-- If you know which field you want the you can run like this:
-> python3 group_by.py input_file -c n
-The n is the number of field.
+> python3 uniq.py whole.fasta -c "4 5"
 
 # Requirement
 
