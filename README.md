@@ -90,6 +90,8 @@ Input query string same as in NCBI Genbank and download large data.
 # large_query_with_id_list.py
 
 According to accession id list you downloaded from NCBI, download gb records.
+Note that this program will not check output. So you have to verify the data
+by self.
 
 Usage:
 
