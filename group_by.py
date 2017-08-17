@@ -50,7 +50,10 @@ def main():
         out_folder = '_'.join([out_folder, 'out'])
     else:
         out_folder = args.out
-    os.mkdir(out_folder)
+    try:
+        os.mkdir(out_folder)
+    except:
+        pass
     if args.choice is None:
         args.choice = get_choice(args.input, SEP)
     start = timer()

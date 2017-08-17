@@ -144,6 +144,19 @@ was used to divide sequence.
 
 > python3 uniq.py whole.fasta -c "4 5"
 
+# replace.py
+
+Replace BOP with info given in "info.csv".
+
+## Usage
+
+> python3 replace.py
+
+Make sure you have info.csv in the same folder with replace.py and fasta files
+end with ".fasta".
+
+Only handle ">BOP000000".
+
 # Requirement
 
 1. [python3](https://www.python.org/downloads/)
