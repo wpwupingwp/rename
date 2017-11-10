@@ -61,7 +61,10 @@ for record in SeqIO.parse(argv[1], 'gb'):
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             gene = normalize(gene)[0]
             gene = safe(gene)
-            sequence = feature.extract(seq)
+            try:
+                sequence = feature.extract(seq)
+            except ValueError:
+                sequence = ''
             sequence = str(sequence)
             with open(join_path(out, gene+'.fasta'), 'a') as handle:
                 handle.write('>{}|{}|{}|{}\n{}\n'.format(
