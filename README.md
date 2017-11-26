@@ -157,6 +157,14 @@ end with ".fasta".
 
 Only handle ">BOP000000".
 
+# add_filename.py
+
+Add filename into the head of sequence id.
+
+## Usage
+
+> python3 add_filename.py fastafile
+
 # Requirement
 
 1. [python3](https://www.python.org/downloads/)
