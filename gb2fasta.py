@@ -24,6 +24,7 @@ family_exception_raw = (
     'Leguminosae,Papilionaceae,Labiatae,Gramineae')
 family_exception = family_exception_raw[0].split(',')
 for record in SeqIO.parse(argv[1], 'gb'):
+    print(record.name)
     """
     From Zhang guojin
     order statswith ales
