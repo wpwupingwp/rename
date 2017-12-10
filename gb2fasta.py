@@ -56,19 +56,22 @@ for record in SeqIO.parse(argv[1], 'gb'):
     except:
         specimen = ''
     seq = record.seq
-    for feature in record.features:
-        if feature.type == 'gene' and 'gene' in feature.qualifiers:
-            gene = feature.qualifiers['gene'][0].replace(' ', '_')
-            gene = normalize(gene)[0]
-            gene = safe(gene)
-            try:
-                sequence = feature.extract(seq)
-            except ValueError:
-                sequence = ''
-            sequence = str(sequence)
-            with open(join_path(out, gene+'.fasta'), 'a') as handle:
-                handle.write('>{}|{}|{}|{}\n{}\n'.format(
-                    gene, taxon, accession, specimen, sequence))
+    try:
+        for feature in record.features:
+            if feature.type == 'gene' and 'gene' in feature.qualifiers:
+                gene = feature.qualifiers['gene'][0].replace(' ', '_')
+                gene = normalize(gene)[0]
+                gene = safe(gene)
+                try:
+                    sequence = feature.extract(seq)
+                except ValueError:
+                    sequence = ''
+                sequence = str(sequence)
+                with open(join_path(out, gene+'.fasta'), 'a') as handle:
+                    handle.write('>{}|{}|{}|{}\n{}\n'.format(
+                        gene, taxon, accession, specimen, sequence))
+    except ValueError:
+        continue
     record.description = ''
     record.id = '|'.join(['raw', taxon, accession, specimen])
     SeqIO.write(record, handle_raw, 'fasta')
