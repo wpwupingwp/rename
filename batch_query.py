@@ -44,6 +44,8 @@ def down(taxon_name, out_path):
                                            retstart=Retstart,
                                            retmax=1000)
             output_file.write(genome_content.read())
+        except KeyboardInterrupt:
+            break
         except:
             continue
         Retstart = Retstart + 1000
