@@ -60,7 +60,7 @@ def main():
     arg.add_argument('-l', dest='list_file',
                      help='Taxonomy name list, seperate by line')
     arg.add_argument('-min_len', default=10, type=int, help='minium length')
-    arg.add_argument('-max_len', default=200000, type=int,
+    arg.add_argument('-max_len', default=10000, type=int,
                      help='maximum length')
     arg.add_argument('-skip', action='store_true',
                      help='only show records numbers')
