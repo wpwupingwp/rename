@@ -25,12 +25,28 @@ def down(taxon_name, out_path):
     print(query)
     handle = Entrez.read(Entrez.esearch(db='nuccore', term=query,
                                         usehistory='y',))
-    genome_content = Entrez.efetch(db='nuccore',
-                                   webenv=handle['WebEnv'],
-                                   query_key=handle['QueryKey'],
-                                   rettype='gb',
-                                   retmode='text')
+    count = handle['Count']
+    count = int(count)
+    print('Totally {} records.'.format(count))
+    if arg.skip:
+        return
     file_name = os.path.join(out_path, taxon_name+'.gb')
+    output_file = open(file_name, 'w')
+    Retstart = 0
+    while Retstart <= count:
+        print(Retstart)
+        try:
+            genome_content = Entrez.efetch(db='nuccore',
+                                           webenv=handle['WebEnv'],
+                                           query_key=handle['QueryKey'],
+                                           rettype='gb',
+                                           retmode='text',
+                                           retstart=Retstart,
+                                           retmax=1000)
+            output_file.write(genome_content.read())
+        except:
+            continue
+        Retstart = Retstart + 1000
     with open(file_name, 'w') as output_file:
             output_file.write(genome_content.read())
     print('{} finished.'.format(taxon_name))
@@ -44,6 +60,8 @@ def main():
     arg.add_argument('-min_len', default=10, type=int, help='minium length')
     arg.add_argument('-max_len', default=200000, type=int,
                      help='maximum length')
+    arg.add_argument('-skip', action='store_true',
+                     help='only show records numbers')
     arg = arg.parse_args()
     out_path = str(datetime.now())[:10]
     os.mkdir(out_path)
