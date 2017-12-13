@@ -64,7 +64,8 @@ def main():
                      help='only show records numbers')
     arg = arg.parse_args()
     out_path = str(datetime.now())[:10]
-    os.mkdir(out_path)
+    if arg.skip is not True:
+        os.mkdir(out_path)
     for taxon in get_list(arg.list_file):
         down(taxon, out_path)
 
