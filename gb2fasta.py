@@ -81,7 +81,11 @@ for record in SeqIO.parse(argv[1], 'gb'):
     record.description = ''
     record.id = '|'.join(['raw', taxon, accession, specimen])
     SeqIO.write(record, handle_raw, 'fasta')
-    genes_str = '-'.join(genes)
+    if len(genes) > 4:
+        genes_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
+                                                 *genes[-2:])
+    else:
+        genes_str = '-'.join(genes)
     record.id = '|'.join([genes_str, taxon, accession, specimen])
     with open(join_path(groupby_name, genes_str+'.fasta'), 'a') as handle_name:
         SeqIO.write(record, handle_name, 'fasta')
