@@ -49,8 +49,6 @@ def down(taxon_name, out_path):
         except:
             continue
         Retstart = Retstart + 1000
-    with open(file_name, 'w') as output_file:
-            output_file.write(genome_content.read())
     print('{} finished.'.format(taxon_name))
 
 
