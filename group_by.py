@@ -15,23 +15,28 @@ def get_choice(fasta, sep):
                 break
     print('This is raw id of one of sequence you give:')
     print(line)
+    print(sep)
     splitted = re.split(sep, line[1:])
     for index, match in enumerate(splitted, 1):
         print('{}.{}'.format(index, match))
         index += 1
-    choice = input(
-        'Choose seperator you want by input number of the field:\n')
-    return int(choice)
+    choice = input(('Choose seperator you want by input number of the field'
+                   ' (use space to seperate multiple fields:\n'))
+    return choice
 
 
 def divide(fasta, sep, choice, out):
+    choice = [int(i)-1 for i in choice.split(' ')]
     for record in SeqIO.parse(fasta, 'fasta'):
-        item = re.split(sep, record.id)
+        new_item = list()
+        items = re.split(sep, record.id)
         try:
-            item = item[choice-1]
-        except:
-            item = 'FAILED'
-        with open(os.path.join(out, item+'.fasta'), 'a') as output:
+            for i in choice:
+                new_item.append(items[i])
+        except IndexError:
+            new_item.append('NOT_FOUND')
+        with open(os.path.join(out, '-'.join(new_item)+'.fasta'),
+                  'a') as output:
             SeqIO.write(record, output, 'fasta')
 
 
@@ -40,11 +45,11 @@ def main():
     args = argparse.ArgumentParser(description=main.__doc__)
     args.add_argument('input', help='input file as fasta format')
     args.add_argument('-o', dest='out', help='output folder')
+    args.add_argument('-s', dest='sep', help='seperator, default "|"')
     args.add_argument('-c', type=int, dest='choice',
                       help='the field you want to use')
     args = args.parse_args()
 
-    SEP = re.compile(r'[\-\|/\\:;~!\?@#$%^&\*+=]')
     if args.out is None:
         out_folder = os.path.splitext(args.input)[0]
         out_folder = '_'.join([out_folder, 'out'])
@@ -54,10 +59,14 @@ def main():
         os.mkdir(out_folder)
     except:
         pass
+    if args.sep is None:
+        args.sep = re.compile(r'[\-\|/\\:;~!\?@#$%^&\*+=]')
+    else:
+        args.sep = re.compile(r'|')
     if args.choice is None:
-        args.choice = get_choice(args.input, SEP)
+        args.choice = get_choice(args.input, args.sep)
     start = timer()
-    divide(args.input, SEP, args.choice, out_folder)
+    divide(args.input, args.sep, args.choice, out_folder)
 
     end = timer()
     print('''
