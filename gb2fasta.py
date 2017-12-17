@@ -4,19 +4,18 @@ import re
 from Bio import SeqIO
 from os import mkdir
 from os.path import join as join_path
-from timeit import default_timer as timer
 from sys import argv
+from timeit import default_timer as timer
 
 from gene_rename import normalize
 
 
-def safe(old):
-    return re.sub(r'\W', '_', old)
-
-
 start = timer()
-out = '{}-out'.format(argv[1].replace('.gb', ''))
-mkdir(out)
+
+groupby_gene = '{}-groupby_gene'.format(argv[1].replace('.gb', ''))
+mkdir(groupby_gene)
+groupby_name = '{}-groupby_name'.format(argv[1].replace('.gb', ''))
+mkdir(groupby_name)
 handle_raw = open(argv[1]+'.fasta', 'w')
 
 
@@ -46,7 +45,12 @@ def get_taxon(taxonomy):
     return order, family
 
 
+def safe(old):
+    return re.sub(r'\W', '_', old)
+
+
 for record in SeqIO.parse(argv[1], 'gb'):
+    genes = list()
     print(record.name)
     order_family = record.annotations['taxonomy']
     order, family = get_taxon(order_family)
@@ -65,18 +69,23 @@ for record in SeqIO.parse(argv[1], 'gb'):
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             gene = normalize(gene)[0]
             gene = safe(gene)
+            genes.append(gene)
             try:
                 sequence = feature.extract(seq)
             except ValueError:
                 sequence = ''
             sequence = str(sequence)
-            with open(join_path(out, gene+'.fasta'), 'a') as handle:
+            with open(join_path(groupby_gene, gene+'.fasta'), 'a') as handle:
                 handle.write('>{}|{}|{}|{}\n{}\n'.format(
                     gene, taxon, accession, specimen, sequence))
     record.description = ''
     record.id = '|'.join(['raw', taxon, accession, specimen])
     SeqIO.write(record, handle_raw, 'fasta')
+    genes_str = '-'.join(genes)
+    record.id = '|'.join([genes_str, taxon, accession, specimen])
+    with open(join_path(groupby_name, genes_str+'.fasta'), 'a') as handle_name:
+        SeqIO.write(record, handle_name, 'fasta')
+
 
 end = timer()
-print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
-{1}.'''.format(end-start, out))
+print('Done with {:.3f}s.'.format(end-start))
