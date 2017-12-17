@@ -21,7 +21,7 @@ def get_choice(fasta, sep):
         print('{}.{}'.format(index, match))
         index += 1
     choice = input(('Choose seperator you want by input number of the field'
-                   ' (use space to seperate multiple fields:\n'))
+                   ' (use space to seperate multiple fields):\n'))
     return choice
 
 
@@ -32,7 +32,10 @@ def divide(fasta, sep, choice, out):
         items = re.split(sep, record.id)
         try:
             for i in choice:
-                new_item.append(items[i])
+                if items[i] == '':
+                    new_item.append('NOT_FOUND')
+                else:
+                    new_item.append(items[i])
         except IndexError:
             new_item.append('NOT_FOUND')
         with open(os.path.join(out, '-'.join(new_item)+'.fasta'),
