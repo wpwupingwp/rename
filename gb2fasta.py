@@ -19,12 +19,14 @@ out = '{}-out'.format(argv[1].replace('.gb', ''))
 mkdir(out)
 handle_raw = open(argv[1]+'.fasta', 'w')
 
+
 family_exception_raw = (
     'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
     'Leguminosae,Papilionaceae,Labiatae,Gramineae')
 family_exception = family_exception_raw[0].split(',')
-for record in SeqIO.parse(argv[1], 'gb'):
-    print(record.name)
+
+
+def get_taxon(taxonomy):
     """
     From Zhang guojin
     order statswith ales
@@ -32,11 +34,6 @@ for record in SeqIO.parse(argv[1], 'gb'):
     http://duocet.ibiodiversity.net/index.php?title=%E4%BA%92%E7%94%A8%E5%90%8D
     %E7%A7%B0&mobileaction=toggle_view_mobile"""
     # order|family|organims(genus|species)
-    order_family = record.annotations['taxonomy']
-    # family_exception_raw = (
-    #     'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
-    #     'Leguminosae,Papilionaceae,Labiatae,Gramineae')
-    # family_exception = family_exception_raw[0].split(',')
     order = ''
     family = ''
     for item in order_family:
@@ -46,15 +43,21 @@ for record in SeqIO.parse(argv[1], 'gb'):
             family = item
         elif item in family_exception:
             family = item
+    return order, family
+
+
+for record in SeqIO.parse(argv[1], 'gb'):
+    print(record.name)
+    order_family = record.annotations['taxonomy']
+    order, family = get_taxon(order_family)
     organism = record.annotations['organism'].replace(' ', '_')
     genus, *species = organism.split('_')
     taxon = '{}|{}|{}|{}'.format(order, family, genus, '_'.join(species))
-
     accession = record.annotations['accessions'][0]
     try:
         specimen = record.features[0].qualifiers['specimen_voucher'
                                                  ][0].replace(' ', '_')
-    except:
+    except KeyError:
         specimen = ''
     seq = record.seq
     for feature in record.features:
