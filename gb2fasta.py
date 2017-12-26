@@ -51,6 +51,7 @@ def safe(old):
 
 for record in SeqIO.parse(argv[1], 'gb'):
     genes = list()
+    products = list()
     print(record.name)
     order_family = record.annotations['taxonomy']
     order, family = get_taxon(order_family)
@@ -65,29 +66,53 @@ for record in SeqIO.parse(argv[1], 'gb'):
         specimen = ''
     seq = record.seq
     for feature in record.features:
+        gene = ''
+        prodcut = ''
         if feature.type == 'gene' and 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             gene = normalize(gene)[0]
             gene = safe(gene)
             genes.append(gene)
-            try:
-                sequence = feature.extract(seq)
-            except ValueError:
-                sequence = ''
-            sequence = str(sequence)
-            with open(join_path(groupby_gene, gene+'.fasta'), 'a') as handle:
-                handle.write('>{}|{}|{}|{}\n{}\n'.format(
-                    gene, taxon, accession, specimen, sequence))
+        elif 'product' in feature.qualifiers:
+            product = feature.qualifiers['product'][0].replace(' ', '_')
+            product = safe(product)
+            products.append(product)
+        else:
+            continue
+        try:
+            sequence = feature.extract(seq)
+        except ValueError:
+            sequence = ''
+        sequence = str(sequence)
+        if gene != '':
+            filename = join_path(groupby_gene, gene+'.fasta')
+            item = gene
+        elif gene == '' and product != '':
+            filename = join_path(groupby_gene, product+'.fasta')
+            item = product
+        else:
+            filename = 'Unknown.fasta'
+            item = ''
+        with open(filename, 'a') as handle:
+            handle.write('>{}|{}|{}|{}\n{}\n'.format(
+                item, taxon, accession, specimen, sequence))
     record.description = ''
     record.id = '|'.join(['raw', taxon, accession, specimen])
     SeqIO.write(record, handle_raw, 'fasta')
     if len(genes) > 4:
-        genes_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
-                                                 *genes[-2:])
+        name_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
+                                                *genes[-2:])
+    elif 0 < len(genes) <= 4:
+        name_str = '-'.join(genes)
+    elif len(products) > 4:
+        name_str = '{}-{}-{}products-{}-{}'.format(
+            *products[:2], len(products)-4, *products[-2:])
+    elif 0 < len(products) <= 4:
+        name_str = '-'.join(products)
     else:
-        genes_str = '-'.join(genes)
-    record.id = '|'.join([genes_str, taxon, accession, specimen])
-    with open(join_path(groupby_name, genes_str+'.fasta'), 'a') as handle_name:
+        name_str = 'Unknown'
+    record.id = '|'.join([name_str, taxon, accession, specimen])
+    with open(join_path(groupby_name, name_str+'.fasta'), 'a') as handle_name:
         SeqIO.write(record, handle_name, 'fasta')
 
 
