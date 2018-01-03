@@ -53,7 +53,6 @@ def uniq(args, sep):
     after = 0
     for record in raw:
         raw_name = re.split(sep, record.id)
-        print(raw_name)
         name = list()
         for index, item in enumerate(raw_name):
             if index in choice:
