@@ -87,7 +87,7 @@ def main():
     start = timer()
     args = parse_args()
 
-    SEP = re.compile(r'[\\|/\\:;~!\?@#$%^&\*+=]')
+    SEP = re.compile(r'[\|/\\:;~!\?@#$%^&\*+=]')
     uniq(args, SEP)
     end = timer()
     print('Cost {:.3f} seconds.'.format(end-start))

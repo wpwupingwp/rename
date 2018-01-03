@@ -63,7 +63,7 @@ def main():
     except:
         pass
     if args.sep is None:
-        args.sep = re.compile(r'[\-\|/\\:;~!\?@#$%^&\*+=]')
+        args.sep = re.compile(r'[\|/\\:;~!\?@#$%^&\*+=]')
     else:
         args.sep = re.compile(r'|')
     if args.choice is None:
