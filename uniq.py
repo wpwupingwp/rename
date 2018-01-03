@@ -53,6 +53,7 @@ def uniq(args, sep):
     after = 0
     for record in raw:
         raw_name = re.split(sep, record.id)
+        print(raw_name)
         name = list()
         for index, item in enumerate(raw_name):
             if index in choice:
@@ -87,7 +88,7 @@ def main():
     start = timer()
     args = parse_args()
 
-    SEP = re.compile(r'[\-\|/\\:;~!\?@#$%^&\*+=]')
+    SEP = re.compile(r'[\\|/\\:;~!\?@#$%^&\*+=]')
     uniq(args, SEP)
     end = timer()
     print('Cost {:.3f} seconds.'.format(end-start))
