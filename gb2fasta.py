@@ -62,7 +62,7 @@ for record in SeqIO.parse(argv[1], 'gb'):
     try:
         specimen = record.features[0].qualifiers['specimen_voucher'
                                                  ][0].replace(' ', '_')
-    except KeyError:
+    except (IndexError, KeyError):
         specimen = ''
     seq = record.seq
     for feature in record.features:
@@ -96,9 +96,6 @@ for record in SeqIO.parse(argv[1], 'gb'):
         with open(filename, 'a') as handle:
             handle.write('>{}|{}|{}|{}\n{}\n'.format(
                 item, taxon, accession, specimen, sequence))
-    record.description = ''
-    record.id = '|'.join(['raw', taxon, accession, specimen])
-    SeqIO.write(record, handle_raw, 'fasta')
     if len(genes) > 4:
         name_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
                                                 *genes[-2:])
@@ -112,6 +109,8 @@ for record in SeqIO.parse(argv[1], 'gb'):
     else:
         name_str = 'Unknown'
     record.id = '|'.join([name_str, taxon, accession, specimen])
+    record.description = ''
+    SeqIO.write(record, handle_raw, 'fasta')
     with open(join_path(groupby_name, name_str+'.fasta'), 'a') as handle_name:
         SeqIO.write(record, handle_name, 'fasta')
 
