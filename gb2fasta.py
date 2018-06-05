@@ -92,42 +92,54 @@ for record in SeqIO.parse(argv[1], 'gb'):
     except (IndexError, KeyError):
         specimen = ''
     whole_seq = record.seq
+    feature_name = list()
 
     for feature in record.features:
         gene = ''
         prodcut = ''
-        if feature.type == 'gene' and 'gene' in feature.qualifiers:
-            gene = feature.qualifiers['gene'][0].replace(' ', '_')
-            gene = normalize(gene)[0]
-            name = safe(gene)
-            genes.append(name)
-        elif 'product' in feature.qualifiers:
-            product = feature.qualifiers['product'][0].replace(' ', '_')
-            name = safe(product)
-            products.append(name)
+        if feature.type == 'gene':
+            if 'gene' in feature.qualifiers:
+                gene = feature.qualifiers['gene'][0].replace(' ', '_')
+                gene = normalize(gene)[0]
+                name = safe(gene)
+                genes.append(name)
+            elif 'product' in feature.qualifiers:
+                product = feature.qualifiers['product'][0].replace(' ', '_')
+                name = safe(product)
+                products.append(name)
         elif feature.type == 'misc_feature' and 'note' in feature.qualifiers:
             misc_feature = feature.qualifiers['note'][0].replace(' ', '_')
             name = safe(misc_feature)
             misc_features.append(name)
         else:
             continue
-    if len(genes) > 4:
-        name_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
-                                                *genes[-2:])
-    elif 0 < len(genes) <= 4:
-        name_str = '-'.join(genes)
-    elif len(products) > 4:
-        name_str = '{}-{}-{}products-{}-{}'.format(
-            *products[:2], len(products)-4, *products[-2:])
-    elif 0 < len(products) <= 4:
-        name_str = '-'.join(products)
-    elif len(misc_features) > 4:
-        name_str = '{}-{}-{}misc_features-{}-{}'.format(
-            *misc_features[:2], len(misc_features)-4, *misc_features[-2:])
-    elif 0 < len(misc_features) <= 4:
-        name_str = '-'.join(misc_features)
+        extract(feature, name, whole_seq)
+        feature_name.append(name)
+    # if len(genes) > 4:
+    #     name_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
+    #                                             *genes[-2:])
+    # elif 0 < len(genes) <= 4:
+    #     name_str = '-'.join(genes)
+    # elif len(products) > 4:
+    #     name_str = '{}-{}-{}products-{}-{}'.format(
+    #         *products[:2], len(products)-4, *products[-2:])
+    # elif 0 < len(products) <= 4:
+    #     name_str = '-'.join(products)
+    # elif len(misc_features) > 4:
+    #     name_str = '{}-{}-{}misc_features-{}-{}'.format(
+    #         *misc_features[:2], len(misc_features)-4, *misc_features[-2:])
+    # elif 0 < len(misc_features) <= 4:
+    #     name_str = '-'.join(misc_features)
+    # else:
+    #     name_str = 'Unknown'
+    if len(feature_name) >= 4:
+        name_str = '{}-{}-{}features-{}-{}'.format(*genes[:2], len(genes)-4,
+                                                   *genes[-2:])
+    elif len(feature_name) != 0:
+        name_str = '-'.join(feature_name)
     else:
         name_str = 'Unknown'
+
     record.id = '|'.join([name_str, taxon, accession, specimen])
     record.description = ''
     SeqIO.write(record, handle_raw, 'fasta')
