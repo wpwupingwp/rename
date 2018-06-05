@@ -76,10 +76,7 @@ def extract(feature, name, whole_seq):
 
 
 for record in SeqIO.parse(argv[1], 'gb'):
-    genes = list()
-    products = list()
-    misc_features = list()
-    print(record.name)
+    # only accept gene, product, and spacer in misc_features.note
     order_family = record.annotations['taxonomy']
     order, family = get_taxon(order_family)
     organism = record.annotations['organism'].replace(' ', '_')
@@ -102,15 +99,19 @@ for record in SeqIO.parse(argv[1], 'gb'):
                 gene = feature.qualifiers['gene'][0].replace(' ', '_')
                 gene = normalize(gene)[0]
                 name = safe(gene)
-                genes.append(name)
             elif 'product' in feature.qualifiers:
                 product = feature.qualifiers['product'][0].replace(' ', '_')
                 name = safe(product)
-                products.append(name)
         elif feature.type == 'misc_feature' and 'note' in feature.qualifiers:
             misc_feature = feature.qualifiers['note'][0].replace(' ', '_')
-            name = safe(misc_feature)
-            misc_features.append(name)
+            if (('intergenic_spacer' in misc_feature or 'IGS' in misc_feature)
+                    and len(misc_feature) < 100):
+                name = safe(misc_feature)
+                name = name.replace('intergenic_spacer_region',
+                                    'intergenic_spacer')
+            else:
+                print(misc_feature)
+                continue
         else:
             continue
         extract(feature, name, whole_seq)
@@ -133,8 +134,8 @@ for record in SeqIO.parse(argv[1], 'gb'):
     # else:
     #     name_str = 'Unknown'
     if len(feature_name) >= 4:
-        name_str = '{}-{}-{}features-{}-{}'.format(*genes[:2], len(genes)-4,
-                                                   *genes[-2:])
+        name_str = '{}-{}features-{}'.format(
+            feature_name[0], len(feature_name)-2, feature_name[-1])
     elif len(feature_name) != 0:
         name_str = '-'.join(feature_name)
     else:
