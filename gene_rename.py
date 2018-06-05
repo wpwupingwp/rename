@@ -15,7 +15,7 @@ def normalize(old_name):
         pattern = re.compile(r'([atcgu]{3})')
         try:
             codon = Seq(re.search(pattern, lower).group(1))
-        except ValueError:
+        except AttributeError:
             return old_name, 'bad_name'
         try:
             new_name = 'trn{}{}'.format(codon.reverse_complement().translate(),
@@ -27,7 +27,7 @@ def normalize(old_name):
         pattern = re.compile(r'(\d+\.?\d?)')
         try:
             number = re.search(pattern, lower).group(1)
-        except ValueError:
+        except AttributeError:
             return old_name, 'bad_name'
         new_name = 'rrn{}'.format(number)
         gene_type = 'rRNA'

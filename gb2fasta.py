@@ -62,6 +62,19 @@ def get_seq(feature, whole_sequence, expand=False, expand_n=100):
     return whole_sequence[start:end]
 
 
+def extract(feature, name, whole_seq):
+    filename = join_path(groupby_gene, name)
+    sequence = get_seq(feature, whole_seq, expand=False)
+    with open(filename, 'a') as handle:
+        handle.write('>{}|{}|{}|{}\n{}\n'.format(
+            name, taxon, accession, specimen, sequence))
+    filename2 = join_path(groupby_gene, 'expand.'+name)
+    sequence = get_seq(feature, whole_seq, expand=True, expand_n=100)
+    with open(filename2, 'a') as handle:
+        handle.write('>{}|{}|{}|{}\n{}\n'.format(
+            name, taxon, accession, specimen, sequence))
+
+
 for record in SeqIO.parse(argv[1], 'gb'):
     genes = list()
     products = list()
@@ -78,7 +91,7 @@ for record in SeqIO.parse(argv[1], 'gb'):
                                                  ][0].replace(' ', '_')
     except (IndexError, KeyError):
         specimen = ''
-    seq = record.seq
+    whole_seq = record.seq
 
     for feature in record.features:
         gene = ''
@@ -86,35 +99,18 @@ for record in SeqIO.parse(argv[1], 'gb'):
         if feature.type == 'gene' and 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
             gene = normalize(gene)[0]
-            gene = safe(gene)
-            genes.append(gene)
+            name = safe(gene)
+            genes.append(name)
         elif 'product' in feature.qualifiers:
             product = feature.qualifiers['product'][0].replace(' ', '_')
-            product = safe(product)
-            products.append(product)
+            name = safe(product)
+            products.append(name)
         elif feature.type == 'misc_feature' and 'note' in feature.qualifiers:
-            misc_feature = feature.qualifier['note'][0].replace(' ', '_')
-            misc_feature = safe(misc_feature)
-            misc_features.append(misc_feature)
+            misc_feature = feature.qualifiers['note'][0].replace(' ', '_')
+            name = safe(misc_feature)
+            misc_features.append(name)
         else:
             continue
-        try:
-            sequence = feature.extract(seq)
-        except ValueError:
-            sequence = ''
-        sequence = str(sequence)
-        if gene != '':
-            filename = join_path(groupby_gene, gene+'.fasta')
-            item = gene
-        elif gene == '' and product != '':
-            filename = join_path(groupby_gene, product+'.fasta')
-            item = product
-        else:
-            filename = 'Unknown.fasta'
-            item = ''
-        with open(filename, 'a') as handle:
-            handle.write('>{}|{}|{}|{}\n{}\n'.format(
-                item, taxon, accession, specimen, sequence))
     if len(genes) > 4:
         name_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
                                                 *genes[-2:])
@@ -125,6 +121,11 @@ for record in SeqIO.parse(argv[1], 'gb'):
             *products[:2], len(products)-4, *products[-2:])
     elif 0 < len(products) <= 4:
         name_str = '-'.join(products)
+    elif len(misc_features) > 4:
+        name_str = '{}-{}-{}misc_features-{}-{}'.format(
+            *misc_features[:2], len(misc_features)-4, *misc_features[-2:])
+    elif 0 < len(misc_features) <= 4:
+        name_str = '-'.join(misc_features)
     else:
         name_str = 'Unknown'
     record.id = '|'.join([name_str, taxon, accession, specimen])
