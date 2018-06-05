@@ -15,19 +15,19 @@ def normalize(old_name):
         pattern = re.compile(r'([atcgu]{3})')
         try:
             codon = Seq(re.search(pattern, lower).group(1))
-        except:
+        except ValueError:
             return old_name, 'bad_name'
         try:
             new_name = 'trn{}{}'.format(codon.reverse_complement().translate(),
                                         codon.transcribe())
-        except:
+        except ValueError:
             return old_name, 'bad_name'
         gene_type = 'tRNA'
     elif lower.startswith('rrn'):
         pattern = re.compile(r'(\d+\.?\d?)')
         try:
             number = re.search(pattern, lower).group(1)
-        except:
+        except ValueError:
             return old_name, 'bad_name'
         new_name = 'rrn{}'.format(number)
         gene_type = 'rRNA'
@@ -43,7 +43,7 @@ def normalize(old_name):
         try:
             gene = match.group('gene')
             suffix = match.group('suffix')
-        except:
+        except ValueError:
             return old_name, 'bad_name'
         new_name = '{}{}'.format(gene, suffix.upper())
         # for gene like rpoC, to normalize capitalize

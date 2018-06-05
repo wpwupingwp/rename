@@ -18,7 +18,6 @@ groupby_name = '{}-groupby_name'.format(argv[1].replace('.gb', ''))
 mkdir(groupby_name)
 handle_raw = open(argv[1]+'.fasta', 'w')
 
-
 family_exception_raw = (
     'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
     'Leguminosae,Papilionaceae,Labiatae,Gramineae')
@@ -49,9 +48,24 @@ def safe(old):
     return re.sub(r'\W', '_', old)
 
 
+def get_seq(feature, whole_sequence, expand=False, expand_n=100):
+    """
+    Given location and whole sequence, return fragment.
+    """
+    if expand:
+        # in case of negative start
+        start = max(0, feature.location.start-expand_n)
+        end = min(len(whole_sequence), feature.location.end+expand_n)
+    else:
+        start = feature.location.start
+        end = feature.location.end
+    return whole_sequence[start:end]
+
+
 for record in SeqIO.parse(argv[1], 'gb'):
     genes = list()
     products = list()
+    misc_features = list()
     print(record.name)
     order_family = record.annotations['taxonomy']
     order, family = get_taxon(order_family)
@@ -65,6 +79,7 @@ for record in SeqIO.parse(argv[1], 'gb'):
     except (IndexError, KeyError):
         specimen = ''
     seq = record.seq
+
     for feature in record.features:
         gene = ''
         prodcut = ''
@@ -77,6 +92,10 @@ for record in SeqIO.parse(argv[1], 'gb'):
             product = feature.qualifiers['product'][0].replace(' ', '_')
             product = safe(product)
             products.append(product)
+        elif feature.type == 'misc_feature' and 'note' in feature.qualifiers:
+            misc_feature = feature.qualifier['note'][0].replace(' ', '_')
+            misc_feature = safe(misc_feature)
+            misc_features.append(misc_feature)
         else:
             continue
         try:
