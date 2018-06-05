@@ -63,12 +63,12 @@ def get_seq(feature, whole_sequence, expand=False, expand_n=100):
 
 
 def extract(feature, name, whole_seq):
-    filename = join_path(groupby_gene, name)
+    filename = join_path(groupby_gene, name+'.fasta')
     sequence = get_seq(feature, whole_seq, expand=False)
     with open(filename, 'a') as handle:
         handle.write('>{}|{}|{}|{}\n{}\n'.format(
             name, taxon, accession, specimen, sequence))
-    filename2 = join_path(groupby_gene, 'expand.'+name)
+    filename2 = join_path(groupby_gene, 'expand.{}.fasta'.format(name))
     sequence = get_seq(feature, whole_seq, expand=True, expand_n=100)
     with open(filename2, 'a') as handle:
         handle.write('>{}|{}|{}|{}\n{}\n'.format(
