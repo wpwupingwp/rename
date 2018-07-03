@@ -53,8 +53,8 @@ def rename(file_list, new_format, out, SEP):
                 # skip sequence
                 if line[0] != '>':
                     new.write(line)
-                    continue
                 else:
+                    line = line.strip()
                     line = new_format.format(*(re.split(SEP, line[1:])))
                     new.write('>{}\n'.format(line))
 
