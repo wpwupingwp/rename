@@ -1,14 +1,11 @@
 #!/usr/bin/python3
 
-from glob import glob
-from os import mkdir
-from os.path import join as join_path
-from timeit import default_timer as timer
 import re
-# from sys import argv
+from sys import argv
+from timeit import default_timer as timer
 
 
-def get_format(example, SEP):
+def get_format_string(example, SEP):
     # read line until get id
     with open(example, 'r') as raw:
         while True:
@@ -23,11 +20,11 @@ def get_format(example, SEP):
         # print('{}.{}|'.format(index, match, end=''))
         print('{}.{}'.format(index, match))
         index += 1
-    print('''   Choose fields you want by input numbers with any order
-    you want. Seperators cannot be omitted and you should not use space or
-    underline. For example, "3|1|2|3!4#1"''')
+    print('''Choose fields you want by input numbers with any order
+you want. Seperators cannot be omitted and you should not use space or
+underline. For example, "3|1|2|3!4#1"''')
     new_format = input()
-    if '_' in set(new_format) or ' ' in set(new_format):
+    if '_' in new_format or ' ' in new_format:
         print('To avoid possible errors, space(" ") and underline("_")'
               ' is prohibited.')
         option = input('Still continue?  [y/n]')
@@ -35,47 +32,47 @@ def get_format(example, SEP):
             pass
         else:
             return None
-
-    def minus_one(letter):
-        return '{{{}}}'.format((int(letter)-1))
-    new_format = re.sub(r'(\d+)', lambda match: minus_one(match.group(1)),
-                        new_format)
-    print('Your new id will look like'
+    print('Your new id will look like '
           'this:\n{}'.format(new_format.format(*splitted)))
     return new_format
 
 
-def rename(file_list, new_format, out, SEP):
-    for fasta in file_list:
-        with open(fasta, 'r') as old, open(
-                join_path(out, fasta), 'w') as new:
-            for line in old:
-                # skip sequence
-                if line[0] != '>':
-                    new.write(line)
-                else:
-                    line = line.strip()
-                    line = new_format.format(*(re.split(SEP, line[1:])))
-                    new.write('>{}\n'.format(line))
+def get_format(string):
+    def minus_one(letter):
+        return '{{{}}}'.format((int(letter)-1))
+    new_format = re.sub(r'(?<!\\)(\d+)', lambda match: minus_one(
+        match.group(1)), string)
+    new_format = new_format.replace('\\', '')
+    return new_format
+
+
+def rename(old_file, new_format, SEP):
+    old = open(old_file, 'r')
+    new = open('rename-'+old_file, 'w')
+    for line in old:
+        if line[0] != '>':
+            new.write(line)
+        else:
+            line = line.strip()
+            line = new_format.format(*(re.split(SEP, line[1:])))
+            new.write('>{}\n'.format(line))
+    old.close()
+    new.close()
 
 
 def main():
-    # gb = argv[1]
-    file_list = glob('*.fasta')
-    example = file_list[-1]
-    OUT = 'renamed'
-    SEP = r'[\|/\\:;~!\?@#$%^&\*+=]'
+    fasta_file = argv[1]
+    SEP = r'[\|/:;~!\?@#$%^&\*+=]'
 
-    new_format = get_format(example, SEP)
-    if new_format is None:
-        return
-    mkdir(OUT)
+    if len(argv) != 3:
+        format_string = get_format_string(fasta_file, SEP)
+    else:
+        format_string = argv[2].strip('"')
+    new_format = get_format(format_string)
     start = timer()
-    rename(file_list, new_format, OUT, SEP)
-
+    rename(fasta_file, new_format, SEP)
     end = timer()
-    print('''\nFinished with {0:.3f} s. You can find fasta file in the folder
-    {1}.'''.format(end-start, OUT))
+    print('Finished with {0:.3f} s.'.format(end-start))
 
 
 if __name__ == '__main__':
