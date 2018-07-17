@@ -54,16 +54,22 @@ Find output files in "file_name_out".
 
 ## Name format
 
-Sequence id follows this format:
-
+You can use these separators:
+> |/:;~!?@#$%^&\*+=
+It's better to avoid use " " (space) and "\_" underscore in id.
+"\" is prohibited.
+Example:
 >  1.gene|2.order|3.family|4.genus|5.species|6.accession_id|7.specimen_voucher
 
 ## Usage
 
-- Put this program in same folder with fasta files you want to change id. 
-- Double click to run. 
--  Input number of fields you want in the order you want. Notice that every field could only be used once.
--  Find output files in "renamed" folder.
+> python3 fasta_rename.py fasta_file "id_format"
+
+"id_format" is new id you want, if you omit it, program will ask you.
+If you want to add fixed number in id, you have to use "\" to avoid conflict
+with index of field in sequence id. For instance, if you want to add "2018" at
+the beginning of the sequence id, you have to enter "\2\0\1\8".
+
 
 # fasta_rename_advance.py
 
