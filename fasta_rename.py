@@ -33,14 +33,15 @@ underline. For example, "3|1|2|3!4#1"''')
         else:
             return None
     print('Your new id will look like '
-          'this:\n{}'.format(new_format.format(*splitted)))
+          'this:\n{}'.format(get_format(new_format).format(*splitted)))
     return new_format
 
 
 def get_format(string):
     def minus_one(letter):
         return '{{{}}}'.format((int(letter)-1))
-    new_format = re.sub(r'(?<!\\)(\d+)', lambda match: minus_one(
+
+    new_format = re.sub(r'(?<!\\)(\d+)(?!\d)', lambda match: minus_one(
         match.group(1)), string)
     new_format = new_format.replace('\\', '')
     return new_format
@@ -54,7 +55,12 @@ def rename(old_file, new_format, SEP):
             new.write(line)
         else:
             line = line.strip()
-            line = new_format.format(*(re.split(SEP, line[1:])))
+            try:
+                line = new_format.format(*(re.split(SEP, line[1:])))
+            except IndexError:
+                print('Skip invalid sequence id:')
+                print(line)
+                continue
             new.write('>{}\n'.format(line))
     old.close()
     new.close()
