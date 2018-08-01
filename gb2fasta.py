@@ -183,9 +183,9 @@ def divide(arg):
             # skip unsupport feature
             if name is None:
                 continue
-            if len(name) > 50:
+            if len(name) > 100:
                 print('Too long name: {}.'.format(name))
-                name = name[:50] + '...'
+                name = name[:100] + '...'
             # skip abnormal annotation
             if len(feature) > 20000:
                 print('Skip abnormal annotaion of {}!'.format(name))
