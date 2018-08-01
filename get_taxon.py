@@ -14,9 +14,13 @@ for line in old:
          *_) = line.strip().split('|')
         species_clean = species.split('_')[0]
         if family == '':
-            kingdom, order, family, genus = name_dict[genus+'|'+species_clean]
-            new.write('|'.join([gene, kingdom, order, family, genus, species,
-                                accession, *_])+'\n')
+            try:
+                kingdom, order, family, genus = name_dict[
+                    genus+'|'+species_clean]
+                new.write('|'.join([gene, kingdom, order, family, genus,
+                                    species, accession, *_])+'\n')
+            except KeyError:
+                new.write(line)
         else:
             new.write(line)
     else:
