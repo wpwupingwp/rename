@@ -11,11 +11,13 @@ new = open(argv[1]+'.rename', 'w')
 for line in old:
     if line[0] == '>':
         (gene, kingdom, order, family, genus, species, accession,
-         *_) = line.strip().split(',')
+         *_) = line.strip().split('|')
         species_clean = species.split('_')[0]
         if family == '':
-            kingdom, order, family = name_dict[genus+'|'+species_clean]
+            kingdom, order, family, genus = name_dict[genus+'|'+species_clean]
             new.write('|'.join([gene, kingdom, order, family, genus, species,
                                 accession, *_])+'\n')
+        else:
+            new.write(line)
     else:
         new.write(line)
