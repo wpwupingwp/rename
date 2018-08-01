@@ -255,10 +255,11 @@ def main():
         arg.out = arg.gbfile.replace('.gb', '')
     mkdir(arg.out)
     wrote_by_gene, wrote_by_name = divide(arg)
-    failed = mafft(wrote_by_gene)
-    for i in failed:
-        print('Remove empty (failed alignment) file {}.'.format(i))
-        remove(i)
+    if arg.align:
+        failed = mafft(wrote_by_gene)
+        for i in failed:
+            print('Remove empty (failed alignment) file {}.'.format(i))
+            remove(i)
     return
 
 
