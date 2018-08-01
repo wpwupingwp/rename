@@ -2,7 +2,7 @@
 
 Most of programs below use sequence id format like this:
 
->  1.gene|2.order|3.family|4.genus|5.species|6.accession_id|7.specimen_voucher
+>  1.gene|2.kingdom|3.order|4.family|5.genus|6.species|7.accession_id|8.specimen_voucher
 
 # gene_rename.py
 
