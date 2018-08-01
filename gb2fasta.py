@@ -1,37 +1,44 @@
 #!/usr/bin/python3
 
+import argparse
 import re
-from Bio import SeqIO
-from os import mkdir
-from os.path import join as join_path
-from sys import argv
 from timeit import default_timer as timer
-
-from gene_rename import normalize
-
-
-start = timer()
-
-groupby_gene = '{}-groupby_gene'.format(argv[1].replace('.gb', ''))
-mkdir(groupby_gene)
-groupby_name = '{}-groupby_name'.format(argv[1].replace('.gb', ''))
-mkdir(groupby_name)
-handle_raw = open(argv[1]+'.fasta', 'w')
-
-family_exception_raw = (
-    'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
-    'Leguminosae,Papilionaceae,Labiatae,Gramineae')
-family_exception = family_exception_raw[0].split(',')
+from subprocess import run
+from os import mkdir, remove, sched_getaffinity
+from os.path import join as join_path
+from Bio.SeqFeature import SeqFeature, FeatureLocation
+from Bio import SeqIO
 
 
-def get_taxon(taxonomy):
+def parse_args():
+    arg = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=main.__doc__)
+    arg.add_argument('gbfile', help='gb format file')
+    arg.add_argument('-out',  help='output directory')
+    arg.add_argument('-rename', action='store_true',
+                     help='try to rename gene')
+    arg.add_argument('-align', action='store_true',
+                     help='use mafft to alignment')
+    return arg.parse_args()
+
+
+def safe(old):
+        return re.sub(r'\W', '_', old)
+
+
+def get_taxon(order_family):
     """
     From Zhang guojin
-    order statswith ales
-    family startswith aceae except 8
+    order end with ales
+    family end with aceae except 8
     http://duocet.ibiodiversity.net/index.php?title=%E4%BA%92%E7%94%A8%E5%90%8D
     %E7%A7%B0&mobileaction=toggle_view_mobile"""
     # order|family|organims(genus|species)
+    family_exception_raw = (
+        'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
+        'Leguminosae,Papilionaceae,Labiatae,Gramineae')
+    family_exception = family_exception_raw[0].split(',')
     order = ''
     family = ''
     for item in order_family:
@@ -44,109 +51,212 @@ def get_taxon(taxonomy):
     return order, family
 
 
-def safe(old):
-    return re.sub(r'\W', '_', old)
-
-
-def get_seq(feature, whole_sequence, expand=False, expand_n=100):
+def write_seq(name, sequence_id, feature, whole_seq, path, arg):
     """
-    Given location and whole sequence, return fragment.
+    Write fasta file.
     """
-    if expand:
-        # in case of negative start
-        start = max(0, feature.location.start-expand_n)
-        end = min(len(whole_sequence), feature.location.end+expand_n)
-    else:
-        start = feature.location.start
-        end = feature.location.end
-    return whole_sequence[start:end]
+    filename = join_path(path, name+'.fasta')
+    sequence = feature.extract(whole_seq)
 
-
-def extract(feature, name, whole_seq):
-    filename = join_path(groupby_gene, name+'.fasta')
-    sequence = get_seq(feature, whole_seq, expand=False)
     with open(filename, 'a') as handle:
-        handle.write('>{}|{}|{}|{}\n{}\n'.format(
-            name, taxon, accession, specimen, sequence))
-    filename2 = join_path(groupby_gene, 'expand.{}.fasta'.format(name))
-    sequence = get_seq(feature, whole_seq, expand=True, expand_n=100)
-    with open(filename2, 'a') as handle:
-        handle.write('>{}|{}|{}|{}\n{}\n'.format(
-            name, taxon, accession, specimen, sequence))
+        handle.write(sequence_id+'\n')
+        handle.write(str(sequence)+'\n')
+    return filename
 
 
-for record in SeqIO.parse(argv[1], 'gb'):
-    # only accept gene, product, and spacer in misc_features.note
-    order_family = record.annotations['taxonomy']
-    order, family = get_taxon(order_family)
-    organism = record.annotations['organism'].replace(' ', '_')
-    genus, *species = organism.split('_')
-    taxon = '{}|{}|{}|{}'.format(order, family, genus, '_'.join(species))
-    accession = record.annotations['accessions'][0]
-    try:
-        specimen = record.features[0].qualifiers['specimen_voucher'
-                                                 ][0].replace(' ', '_')
-    except (IndexError, KeyError):
-        specimen = ''
-    whole_seq = record.seq
-    feature_name = list()
-
-    for feature in record.features:
-        gene = ''
-        prodcut = ''
-        if feature.type == 'gene':
-            if 'gene' in feature.qualifiers:
-                gene = feature.qualifiers['gene'][0].replace(' ', '_')
-                gene = normalize(gene)[0]
-                name = safe(gene)
-            elif 'product' in feature.qualifiers:
-                product = feature.qualifiers['product'][0].replace(' ', '_')
-                name = safe(product)
-        elif feature.type == 'misc_feature' and 'note' in feature.qualifiers:
-            misc_feature = feature.qualifiers['note'][0].replace(' ', '_')
-            if (('intergenic_spacer' in misc_feature or 'IGS' in misc_feature)
-                    and len(misc_feature) < 100):
-                name = safe(misc_feature)
-                name = name.replace('intergenic_spacer_region',
-                                    'intergenic_spacer')
-            else:
-                print(misc_feature)
-                continue
+def get_feature_name(feature, arg):
+    """
+    Get feature name and collect genes for extract spacer.
+    Only handle gene, product, misc_feature, misc_RNA.
+    Return: [name, feature.type]
+    """
+    name = None
+    if feature.type == 'gene':
+        if 'gene' in feature.qualifiers:
+            gene = feature.qualifiers['gene'][0].replace(' ', '_')
+            if arg.rename:
+                gene = gene_rename(gene)[0]
+            name = safe(gene)
+        elif 'product' in feature.qualifiers:
+            product = feature.qualifiers['product'][0].replace(
+                ' ', '_')
+            name = safe(product)
+    elif feature.type == 'misc_feature':
+        if 'product' in feature.qualifiers:
+            misc_feature = feature.qualifiers['product'][0].replace(
+                ' ', '_')
+        elif 'note' in feature.qualifiers:
+            misc_feature = feature.qualifiers['note'][0].replace(
+                ' ', '_')
+        if (('intergenic_spacer' in misc_feature or
+             'IGS' in misc_feature)):
+            # 'IGS' in misc_feature) and len(misc_feature) < 100):
+            name = safe(misc_feature)
+            name = name.replace('intergenic_spacer_region',
+                                'intergenic_spacer')
         else:
-            continue
-        extract(feature, name, whole_seq)
-        feature_name.append(name)
-    # if len(genes) > 4:
-    #     name_str = '{}-{}-{}genes-{}-{}'.format(*genes[:2], len(genes)-4,
-    #                                             *genes[-2:])
-    # elif 0 < len(genes) <= 4:
-    #     name_str = '-'.join(genes)
-    # elif len(products) > 4:
-    #     name_str = '{}-{}-{}products-{}-{}'.format(
-    #         *products[:2], len(products)-4, *products[-2:])
-    # elif 0 < len(products) <= 4:
-    #     name_str = '-'.join(products)
-    # elif len(misc_features) > 4:
-    #     name_str = '{}-{}-{}misc_features-{}-{}'.format(
-    #         *misc_features[:2], len(misc_features)-4, *misc_features[-2:])
-    # elif 0 < len(misc_features) <= 4:
-    #     name_str = '-'.join(misc_features)
-    # else:
-    #     name_str = 'Unknown'
-    if len(feature_name) >= 4:
-        name_str = '{}-{}features-{}'.format(
-            feature_name[0], len(feature_name)-2, feature_name[-1])
-    elif len(feature_name) != 0:
-        name_str = '-'.join(feature_name)
+            pass
+    elif feature.type == 'misc_RNA':
+        if 'product' in feature.qualifiers:
+            misc_feature = feature.qualifiers['product'][0].replace(
+                ' ', '_')
+        elif 'note' in feature.qualifiers:
+            misc_feature = feature.qualifiers['note'][0].replace(
+                ' ', '_')
+        name = safe(misc_feature)
+        # handle ITS
+        if 'internal_transcribed_spacer' in name:
+            name = 'ITS'
+        # name = name.replace('internal_transcribed_spacer', 'ITS')
+        # if 'ITS_1' in name:
+        #     if 'ITS_2' in name:
+        #         name = 'ITS'
+        #     else:
+        #         name = 'ITS_1'
+        # elif 'ITS_2' in name:
+        #     name = 'ITS_2'
     else:
-        name_str = 'Unknown'
-
-    record.id = '|'.join([name_str, taxon, accession, specimen])
-    record.description = ''
-    SeqIO.write(record, handle_raw, 'fasta')
-    with open(join_path(groupby_name, name_str+'.fasta'), 'a') as handle_name:
-        SeqIO.write(record, handle_name, 'fasta')
+        pass
+        # print('Cannot handle feature:')
+        # print(feature)
+    return name, feature.type
 
 
-end = timer()
-print('Done with {:.3f}s.'.format(end-start))
+def get_spacer(genes, arg):
+    """
+    List: [[name, SeqFeature],]
+    """
+    spacers = list()
+    # sorted according to sequence starting postion
+    genes.sort(key=lambda x: int(x[1].location.start))
+    for n, present in enumerate(genes[1:], 1):
+        before = genes[n-1]
+        # use sort to handle complex location relationship of two fragments
+        location = [before[1].location.start, before[1].location.end,
+                    present[1].location.start, present[1].location.end]
+        location.sort(key=lambda x: int(x))
+        start, end = location[1:3]
+        if before[1].location.strand == present[1].location.strand == -1:
+            strand = -1
+        else:
+            strand = 1
+        name = '_'.join([before[0], present[0]])
+        spacer = SeqFeature(FeatureLocation(start, end), id=name,
+                            type='spacer', strand=strand)
+        spacers.append(spacer)
+    return spacers
+
+
+def divide(arg):
+    """
+    Given genbank file, return divided fasta files.
+    """
+    start = timer()
+    groupby_gene = join_path(arg.out, '{}-groupby_gene'.format(arg.out))
+    mkdir(groupby_gene)
+    groupby_name = join_path(arg.out, '{}-groupby_name'.format(arg.out))
+    mkdir(groupby_name)
+    handle_raw = open(arg.gbfile+'.fasta', 'w')
+    wrote_by_gene = set()
+    wrote_by_name = set()
+
+    for record in SeqIO.parse(arg.gbfile, 'gb'):
+        # only accept gene, product, and spacer in misc_features.note
+        order_family = record.annotations['taxonomy']
+        order, family = get_taxon(order_family)
+        organism = record.annotations['organism'].replace(' ', '_')
+        genus, *species = organism.split('_')
+        taxon = '{}|{}|{}|{}'.format(order, family, genus, '_'.join(species))
+        accession = record.annotations['accessions'][0]
+        try:
+            specimen = record.features[0].qualifiers['specimen_voucher'
+                                                     ][0].replace(' ', '_')
+        except (IndexError, KeyError):
+            specimen = ''
+        whole_seq = record.seq
+        feature_name = list()
+        genes = list()
+
+        for feature in record.features:
+            name, feature_type = get_feature_name(feature, arg)
+            # skip unsupport feature
+            if name is None:
+                continue
+            # skip abnormal annotation
+            if len(feature) > 20000:
+                print('Skip abnormal annotaion of {}!'.format(name))
+                print('Accession: ', accession)
+                continue
+            if feature_type == 'gene':
+                genes.append([name, feature])
+            feature_name.append(name)
+            sequence_id = '>' + '|'.join([name, taxon, accession, specimen])
+            wrote = write_seq(name, sequence_id, feature, whole_seq,
+                              groupby_gene, arg)
+            wrote_by_gene.add(wrote)
+
+        # extract spacer
+        spacers = get_spacer(genes, arg)
+        for spacer in spacers:
+            sequence_id = '>' + '|'.join([spacer.id, taxon,
+                                          accession, specimen])
+            wrote = write_seq(spacer.id, sequence_id, spacer, whole_seq,
+                              groupby_gene, arg)
+            wrote_by_gene.add(wrote)
+        # write to group_by name, i.e., one gb record one fasta
+        if 'ITS' in feature_name:
+            name_str = 'ITS'
+        elif len(feature_name) >= 4:
+            name_str = '{}-...-{}'.format(feature_name[0], feature_name[-1])
+        elif len(feature_name) == 0:
+            name_str = 'Unknown'
+        else:
+            name_str = '-'.join(feature_name)
+        record.id = '|'.join([name_str, taxon, accession, specimen])
+        record.description = ''
+        filename = join_path(groupby_name, name_str+'.fasta')
+        with open(filename, 'a') as out:
+            SeqIO.write(record, out, 'fasta')
+            wrote_by_name.add(filename)
+        # write raw fasta
+        SeqIO.write(record, handle_raw, 'fasta')
+
+    end = timer()
+    print('Divide done with {:.3f}s.'.format(end-start))
+    return wrote_by_gene, wrote_by_name
+
+
+def mafft(files):
+    failed = list()
+    # get available CPU cores
+    cores = len(sched_getaffinity(0))
+    print('Start mafft ...')
+    for fasta in files:
+        print('Aligning {}'.format(fasta))
+        out = fasta + '.aln'
+        _ = ('mafft --thread {} --reorder --quiet --adjustdirection '
+             ' {} > {}'.format(cores-1, fasta, out))
+        m = run(_, shell=True)
+        if m.returncode != 0:
+            failed.append(out)
+    print('Done with mafft.')
+    return failed
+
+
+def main():
+    """Get data from Genbank.
+    """
+    arg = parse_args()
+    if arg.out is None:
+        arg.out = arg.gbfile.replace('.gb', '')
+    mkdir(arg.out)
+    wrote_by_gene, wrote_by_name = divide(arg)
+    failed = mafft(wrote_by_gene)
+    for i in failed:
+        print('Remove empty (failed alignment) file {}.'.format(i))
+        remove(i)
+    return
+
+
+if __name__ == '__main__':
+    main()

@@ -3,7 +3,7 @@ from Bio.Seq import Seq
 import re
 
 
-def normalize(old_name):
+def gene_rename(old_name):
     """For chloroplast gene.
     Input->str
     Output->List[new_name:str, name_type:str]
@@ -46,12 +46,12 @@ def normalize(old_name):
         except ValueError:
             return old_name, 'bad_name'
         new_name = '{}{}'.format(gene, suffix.upper())
-        # for gene like rpoC, to normalize capitalize
+        # captitalize last letter
         if len(new_name) > 3:
             s = list(new_name)
-            if s[3].isalpha():
+            if s[-1].isalpha():
                 new_name = '{}{}'.format(
-                    ''.join(s[0:3]), ''.join(s[3:]).upper())
+                    ''.join(s[:-1]), ''.join(s[-1]).upper())
         gene_type = 'normal'
     if len(lower) >= 15:
         gene_type = 'suspicious_name'
