@@ -3,7 +3,7 @@ from Bio.Seq import Seq
 import re
 
 
-def gene_rename(old_name):
+def rename(old_name):
     """For chloroplast gene.
     Input->str
     Output->List[new_name:str, name_type:str]

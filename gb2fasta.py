@@ -8,6 +8,7 @@ from os import mkdir, remove, sched_getaffinity
 from os.path import join as join_path
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio import SeqIO
+from gene_rename import rename
 
 
 def parse_args():
@@ -16,7 +17,7 @@ def parse_args():
         description=main.__doc__)
     arg.add_argument('gbfile', help='gb format file')
     arg.add_argument('-out',  help='output directory')
-    arg.add_argument('-rename', action='store_true',
+    arg.add_argument('-no_rename', action='store_true',
                      help='try to rename gene')
     arg.add_argument('-align', action='store_true',
                      help='use mafft to alignment')
@@ -74,8 +75,8 @@ def get_feature_name(feature, arg):
     if feature.type == 'gene':
         if 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
-            if arg.rename:
-                gene = gene_rename(gene)[0]
+            if not arg.no_rename:
+                gene = rename(gene)[0]
             name = safe(gene)
         elif 'product' in feature.qualifiers:
             product = feature.qualifiers['product'][0].replace(
@@ -182,6 +183,9 @@ def divide(arg):
             # skip unsupport feature
             if name is None:
                 continue
+            if len(name) > 50:
+                print('Too long name: {}.'.format(name))
+                name = name[:50] + '...'
             # skip abnormal annotation
             if len(feature) > 20000:
                 print('Skip abnormal annotaion of {}!'.format(name))
