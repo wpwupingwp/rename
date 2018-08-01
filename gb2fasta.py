@@ -28,28 +28,29 @@ def safe(old):
         return re.sub(r'\W', '_', old)
 
 
-def get_taxon(order_family):
-    """
-    From Zhang guojin
-    order end with ales
-    family end with aceae except 8
-    http://duocet.ibiodiversity.net/index.php?title=%E4%BA%92%E7%94%A8%E5%90%8D
-    %E7%A7%B0&mobileaction=toggle_view_mobile"""
-    # order|family|organims(genus|species)
-    family_exception_raw = (
-        'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
-        'Leguminosae,Papilionaceae,Labiatae,Gramineae')
-    family_exception = family_exception_raw[0].split(',')
+def get_taxon(lineage, family_exception):
+    superkingdom = ''
+    kingdom = None
     order = ''
     family = ''
-    for item in order_family:
+    for item in lineage:
         if item.endswith('ales'):
             order = item
-        elif item.endswith('aceae'):
+        elif (item.endswith('aceae') or item.endswith('idae') or
+              item.endswith('viridae')):
             family = item
         elif item in family_exception:
             family = item
-    return order, family
+        elif item in ('Bacteria', 'Archaea', 'Viruses',
+                      'Eukaryota', 'Viroids'):
+            superkingdom = item
+        elif item in ('Metazoa', 'Fungi', 'Viridiplantae'):
+            kingdom = item
+    if superkingdom == 'Eukaryota' and kingdom is not None:
+        Type = kingdom
+    else:
+        Type = superkingdom
+    return Type, order, family
 
 
 def write_seq(name, sequence_id, feature, whole_seq, path, arg):
@@ -150,7 +151,17 @@ def get_spacer(genes, arg):
 def divide(arg):
     """
     Given genbank file, return divided fasta files.
+    From Zhang guojin
+    order end with ales
+    family end with aceae except 8
+    http://duocet.ibiodiversity.net/index.php?title=%E4%BA%92%E7%94%A8%E5%90%8D
+    %E7%A7%B0&mobileaction=toggle_view_mobile
     """
+    # kingdom|order|family|organims(genus|species)
+    family_exception_raw = (
+        'Umbelliferae,Palmae,Compositae,Cruciferae,Guttiferae,Leguminosae,'
+        'Leguminosae,Papilionaceae,Labiatae,Gramineae')
+    family_exception = family_exception_raw[0].split(',')
     start = timer()
     groupby_gene = join_path(arg.out, '{}-groupby_gene'.format(arg.out))
     mkdir(groupby_gene)
@@ -162,11 +173,12 @@ def divide(arg):
 
     for record in SeqIO.parse(arg.gbfile, 'gb'):
         # only accept gene, product, and spacer in misc_features.note
-        order_family = record.annotations['taxonomy']
-        order, family = get_taxon(order_family)
+        lineage = record.annotations['taxonomy']
+        # kingdom or superkingdom
+        kingdom, order, family = get_taxon(lineage, family_exception)
         organism = record.annotations['organism'].replace(' ', '_')
         genus, *species = organism.split('_')
-        taxon = '{}|{}|{}|{}'.format(order, family, genus, '_'.join(species))
+        taxon = '|'.join([kingdom, order, family, genus, '_'.join(species)])
         accession = record.annotations['accessions'][0]
         try:
             specimen = record.features[0].qualifiers['specimen_voucher'
@@ -247,8 +259,6 @@ def mafft(files):
 
 
 def main():
-    """Get data from Genbank.
-    """
     arg = parse_args()
     if arg.out is None:
         arg.out = arg.gbfile.replace('.gb', '')
