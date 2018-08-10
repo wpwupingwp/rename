@@ -10,7 +10,8 @@ import re
 def parse_args():
     args = argparse.ArgumentParser(description=main.__doc__)
     args.add_argument('input', help='input file as fasta format')
-    args.add_argument('-c', dest='choice', help='the field you want to use')
+    args.add_argument('-c', type=str, dest='choice',
+                      help='the field you want to use')
     args.add_argument('-m', '--method', default='longest',
                       help='method to get the only sequence')
     args.print_help()
