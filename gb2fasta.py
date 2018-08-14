@@ -36,7 +36,8 @@ def get_taxon(lineage, family_exception):
     for item in lineage:
         if item.endswith('ales'):
             order = item
-        elif (item.endswith('aceae') or item.endswith('idae') or
+        elif (item.endswith('aceae') or
+        #elif (item.endswith('aceae') or item.endswith('idae') or
               item.endswith('viridae')):
             family = item
         elif item in family_exception:
