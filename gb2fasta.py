@@ -4,7 +4,7 @@ import argparse
 import re
 from timeit import default_timer as timer
 from subprocess import run
-from os import mkdir, remove, sched_getaffinity
+from os import mkdir, remove, cpu_count
 from os.path import join as join_path
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio import SeqIO
@@ -245,7 +245,7 @@ def divide(arg):
 def mafft(files):
     failed = list()
     # get available CPU cores
-    cores = len(sched_getaffinity(0))
+    cores = cpu_count()
     print('Start mafft ...')
     for fasta in files:
         print('Aligning {}'.format(fasta))
