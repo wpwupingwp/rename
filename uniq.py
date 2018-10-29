@@ -2,7 +2,6 @@
 
 from Bio import SeqIO
 from timeit import default_timer as timer
-from subprocess import run
 import argparse
 import re
 
