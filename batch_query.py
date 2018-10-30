@@ -46,7 +46,7 @@ def down(taxon_name, out_path):
             output_file.write(genome_content.read())
         except KeyboardInterrupt:
             break
-        except:
+        except IOError:
             continue
         Retstart = Retstart + 1000
     print('{} finished.'.format(taxon_name))
