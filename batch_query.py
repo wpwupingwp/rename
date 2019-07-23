@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from Bio import Entrez
-from datetime import datetime
+from time import sleep
 import argparse
 import os
 
@@ -19,7 +19,7 @@ def down(taxon_name, out_path):
     Entrez.email = EMAIL
     FILTER = '(plastid[filter] OR chloroplast[filter])'
     # set 'noexp' to fetch only this level
-    query = '''"{}"[Organism] AND {} AND ("{}"[SLEN] : "{}"[SLEN]))'''.format(
+    query = '''"{}"[Organism] AND {} AND ("{}"[SLEN] : "{}"[SLEN])'''.format(
         taxon_name, FILTER, arg.min_len, arg.max_len)
     print(query)
     handle = Entrez.read(Entrez.esearch(db='nuccore', term=query,
@@ -54,19 +54,23 @@ def down(taxon_name, out_path):
 def main():
     global arg
     arg = argparse.ArgumentParser()
-    arg.add_argument('-l', dest='list_file',
+    arg.add_argument('list_file',
                      help='Taxonomy name list, seperate by line')
-    arg.add_argument('-min_len', default=10, type=int, help='minium length')
-    arg.add_argument('-max_len', default=10000, type=int,
+    arg.add_argument('-min', dest='min_len', default=100000, type=int,
+                     help='minium length')
+    arg.add_argument('-max', dest='max_len', default=300000, type=int,
                      help='maximum length')
+    arg.add_argument('-o', '-out', dest='out', default='Result',
+                     help='output path')
     arg.add_argument('-skip', action='store_true',
                      help='only show records numbers')
     arg = arg.parse_args()
-    out_path = str(datetime.now())[:10]
     if arg.skip is not True:
-        os.mkdir(out_path)
+        os.mkdir(arg.out)
     for taxon in get_list(arg.list_file):
-        down(taxon, out_path)
+        down(taxon, arg.out)
+        # Entrez limit
+        sleep(0.5)
 
 
 if __name__ == '__main__':
