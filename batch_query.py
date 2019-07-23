@@ -17,11 +17,10 @@ def get_list(list_file):
 def down(taxon_name, out_path):
     EMAIL = 'wpwupingwp@outlook.com'
     Entrez.email = EMAIL
-    FILTER = 'plastid'
+    FILTER = '(plastid[filter] OR chloroplast[filter])'
     # set 'noexp' to fetch only this level
-    EXP = 'exp'
-    query = '''{}[Organism:{}] AND ({}[filter] AND ("{}"[SLEN] :
-    "{}"[SLEN]))'''.format(taxon_name, EXP, FILTER, arg.min_len, arg.max_len)
+    query = '''"{}"[Organism] AND {} AND ("{}"[SLEN] : "{}"[SLEN]))'''.format(
+        taxon_name, FILTER, arg.min_len, arg.max_len)
     print(query)
     handle = Entrez.read(Entrez.esearch(db='nuccore', term=query,
                                         usehistory='y',))
