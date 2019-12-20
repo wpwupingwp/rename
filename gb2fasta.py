@@ -109,6 +109,8 @@ def get_feature_name(feature, arg):
                 ' ', '_')
         if misc_feature is not None:
             name = safe(misc_feature)
+        else:
+            return None, None
         # handle ITS
         if 'internal_transcribed_spacer' in name:
             name = 'ITS'
