@@ -74,6 +74,8 @@ def get_feature_name(feature, arg):
     Return: [name, feature.type]
     """
     name = None
+    misc_feature = None
+    gene = None
     if feature.type == 'gene':
         if 'gene' in feature.qualifiers:
             gene = feature.qualifiers['gene'][0].replace(' ', '_')
