@@ -105,7 +105,8 @@ def get_feature_name(feature, arg):
         elif 'note' in feature.qualifiers:
             misc_feature = feature.qualifiers['note'][0].replace(
                 ' ', '_')
-        name = safe(misc_feature)
+        if misc_feature is not None:
+            name = safe(misc_feature)
         # handle ITS
         if 'internal_transcribed_spacer' in name:
             name = 'ITS'
