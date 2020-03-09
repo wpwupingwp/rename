@@ -7,6 +7,7 @@ files_lower = dict()
 for f in files:
     lower = str(f).lower()
     if lower in files:
+        print(f, files_lower[lower])
         # pathlib do not support write append
         with open(files_lower[lower], 'a') as out:
             out.write(f.read_text())
