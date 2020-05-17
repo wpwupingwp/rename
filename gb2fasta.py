@@ -25,7 +25,7 @@ def parse_args():
 
 
 def safe(old):
-        return re.sub(r'\W', '_', old)
+    return re.sub(r'\W', '_', old)
 
 
 def get_taxon(lineage, family_exception):
@@ -37,7 +37,7 @@ def get_taxon(lineage, family_exception):
         if item.endswith('ales'):
             order = item
         elif (item.endswith('aceae') or
-        #elif (item.endswith('aceae') or item.endswith('idae') or
+              # elif (item.endswith('aceae') or item.endswith('idae') or
               item.endswith('viridae')):
             family = item
         elif item in family_exception:
@@ -83,9 +83,13 @@ def get_feature_name(feature, arg):
                 gene = rename(gene)[0]
             name = safe(gene)
         elif 'product' in feature.qualifiers:
-            product = feature.qualifiers['product'][0].replace(
-                ' ', '_')
+            product = feature.qualifiers['product'][0].replace(' ', '_')
             name = safe(product)
+        elif 'locus_tag' in feature.qualifiers:
+            locus = feature.qualifiers['locus_tag'][0].replace(' ', '_')
+            name = safe(locus)
+        else:
+            pass
     elif feature.type == 'misc_feature':
         misc_feature = None
         if 'product' in feature.qualifiers:
