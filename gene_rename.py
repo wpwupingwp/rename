@@ -18,8 +18,14 @@ def rename(old_name):
         except AttributeError:
             return old_name, 'bad_name'
         try:
-            new_name = 'trn{}{}'.format(codon.reverse_complement().translate(),
-                                        codon.transcribe())
+            if lower.startswith('trnf'):
+                new_name = 'trnf{}{}'.format(
+                    codon.reverse_complement().translate(),
+                    codon.transcribe())
+            else:
+                new_name = 'trn{}{}'.format(
+                    codon.reverse_complement().translate(),
+                    codon.transcribe())
         except ValueError:
             return old_name, 'bad_name'
         gene_type = 'tRNA'
