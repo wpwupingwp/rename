@@ -18,7 +18,7 @@ def rename(old_name):
         except AttributeError:
             return old_name, 'bad_name'
         try:
-            if lower.startswith('trnf'):
+            if lower.startswith('trnfm'):
                 new_name = 'trnf{}{}'.format(
                     codon.reverse_complement().translate(),
                     codon.transcribe())
