@@ -22,8 +22,12 @@ def down(taxon_name, out_path):
     query = '''"{}"[Organism] AND {} AND ("{}"[SLEN] : "{}"[SLEN])'''.format(
         taxon_name, FILTER, arg.min_len, arg.max_len)
     print(query)
-    handle = Entrez.read(Entrez.esearch(db='nuccore', term=query,
-                                        usehistory='y',))
+    try:
+        handle = Entrez.read(Entrez.esearch(db='nuccore', term=query,
+                                            usehistory='y',))
+    except Exception:
+        print('Failed to query', taxon_name)
+        return
     count = handle['Count']
     count = int(count)
     print('Totally {} records.'.format(count))
