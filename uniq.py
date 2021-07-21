@@ -12,7 +12,7 @@ def parse_arg():
                      help='the field you want to use')
     arg.add_argument('-m', '--method', default='longest',
                      help='method to get the only sequence')
-    arg.print_help()
+    # arg.print_help()
     return arg.parse_args()
 
 
